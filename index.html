@@ -49,7 +49,7 @@
     <script type="text/babel">
         const { useState, useEffect, useCallback, useRef } = React;
 
-        const API_KEY = "AIzaSyCbq9ZhgOTMTjNWUebfD9k25sD9CJSacOU";
+        const API_KEY = ""; // El entorno proporciona la clave en tiempo de ejecución
         const MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
         const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'fatla-ai-v4';
         const MAX_LIVES = 5;
@@ -209,7 +209,7 @@
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
                             contents: [{ 
-                                parts: [{ text: `Actúa como un experto en e-learning. Consulta www.fatla.org para validar la información. Genera 5 preguntas únicas de selección múltiple sobre el Módulo ${level} de FATLA y la metodología PACIE. Formato JSON estricto: {"questions": [{"q": "pregunta", "options": ["A", "B", "C", "D"], "correct": 0}]}.` }] 
+                                parts: [{ text: `Actúa como un experto en e-learning y FATLA. Consulta www.fatla.org para validar la información. Genera exactamente 5 preguntas de selección múltiple sobre el Módulo ${level} de FATLA y la metodología PACIE. ASEGÚRATE DE QUE SEAN DIFERENTES A LAS ANTERIORES. Formato JSON estricto: {"questions": [{"q": "pregunta", "options": ["A", "B", "C", "D"], "correct": 0}]}.` }] 
                             }],
                             tools: [{ "google_search": {} }],
                             generationConfig: { responseMimeType: "application/json", temperature: 1.0 }
@@ -234,8 +234,16 @@
                 setGameState('playing');
             };
 
+            const refreshQuestions = async () => {
+                setIsLoading(true);
+                const newQs = await fetchFromGemini(progress.level);
+                setQuestionPool(newQs);
+                setCurrentIndex(0);
+                setIsLoading(false);
+            };
+
             const handleAnswer = (idx) => {
-                if (feedback) return;
+                if (feedback || isLoading) return;
                 const currentQ = questionPool[currentIndex];
                 const isCorrect = idx === currentQ.correct;
                 setSelectedIdx(idx);
@@ -244,18 +252,22 @@
                 if (isCorrect) {
                     const nextCorrect = progress.questionsCorrectInCurrentLevel + 1;
                     const levelUp = nextCorrect >= GOAL_PER_LEVEL;
+                    
                     handleProgressUpdate({
                         score: progress.score + 25,
                         questionsCorrectInCurrentLevel: levelUp ? 0 : nextCorrect,
                         level: levelUp ? progress.level + 1 : progress.level
                     });
+
                     setTimeout(() => {
                         setFeedback(null);
                         setSelectedIdx(null);
-                        if (currentIndex + 1 < questionPool.length) {
-                            setCurrentIndex(currentIndex + 1);
+                        
+                        // Si se agotaron las 5 preguntas del pool actual, pedir nuevas automáticamente
+                        if (currentIndex + 1 >= questionPool.length) {
+                            refreshQuestions();
                         } else {
-                            startExam();
+                            setCurrentIndex(currentIndex + 1);
                         }
                     }, 1000);
                 } else {
@@ -266,12 +278,16 @@
                     setTimeout(() => {
                         setFeedback(null);
                         setSelectedIdx(null);
-                        setCurrentIndex((currentIndex + 1) % questionPool.length);
+                        // Rotar a la siguiente aunque falle, para no estancarse
+                        if (currentIndex + 1 >= questionPool.length) {
+                            refreshQuestions();
+                        } else {
+                            setCurrentIndex(currentIndex + 1);
+                        }
                     }, 1200);
                 }
             };
 
-            // Componente del Indicador de Estado
             const ReadyIndicator = () => (
                 <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-2xl transition-all">
                     <div className={`w-2 h-2 rounded-full ${
@@ -280,7 +296,7 @@
                         'bg-red-500'
                     }`} />
                     <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
-                        {isLoading ? 'Sincronizando...' : isOnline ? 'System Ready' : 'Offline'}
+                        {isLoading ? 'Actualizando Base...' : isOnline ? 'System Ready' : 'Offline'}
                     </span>
                 </div>
             );
@@ -348,37 +364,46 @@
                                 <div className="mb-8">
                                     <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-2">
                                         <span>Progreso Nivel {progress.level}</span>
-                                        <span>{Math.round((progress.questionsCorrectInCurrentLevel / GOAL_PER_LEVEL) * 100)}%</span>
+                                        <span>{progress.questionsCorrectInCurrentLevel} / {GOAL_PER_LEVEL}</span>
                                     </div>
                                     <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
                                         <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${(progress.questionsCorrectInCurrentLevel / GOAL_PER_LEVEL) * 100}%` }} />
                                     </div>
                                 </div>
 
-                                <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-8 leading-tight min-h-[5rem]">
-                                    {questionPool[currentIndex]?.q}
-                                </h2>
-                                
-                                <div className="grid gap-3 w-full">
-                                    {questionPool[currentIndex]?.options.map((opt, idx) => (
-                                        <button 
-                                            key={idx}
-                                            disabled={!!feedback}
-                                            onClick={() => handleAnswer(idx)}
-                                            className={`p-5 text-left rounded-3xl border-2 font-bold transition-all flex items-center gap-4 ${
-                                                feedback === 'correct' && idx === questionPool[currentIndex].correct ? 'bg-green-500 border-green-500 text-white scale-[1.02]' :
-                                                feedback === 'wrong' && selectedIdx === idx ? 'bg-red-500 border-red-500 text-white animate-shake' :
-                                                feedback === 'wrong' && idx === questionPool[currentIndex].correct ? 'bg-green-50 border-green-200 text-green-700' :
-                                                'bg-white border-slate-100 active:bg-orange-50'
-                                            }`}
-                                        >
-                                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 text-[10px] flex items-center justify-center border border-slate-200 text-slate-500 font-black">
-                                                {String.fromCharCode(65 + idx)}
-                                            </span>
-                                            {opt}
-                                        </button>
-                                    ))}
-                                </div>
+                                {isLoading ? (
+                                    <div className="flex flex-col items-center justify-center min-h-[10rem] animate-pulse">
+                                        <LucideIcon name="refresh-cw" className="animate-spin text-orange-500 mb-4" size={40} />
+                                        <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Sincronizando nuevas preguntas...</p>
+                                    </div>
+                                ) : (
+                                    <>
+                                        <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-8 leading-tight min-h-[5rem]">
+                                            {questionPool[currentIndex]?.q}
+                                        </h2>
+                                        
+                                        <div className="grid gap-3 w-full">
+                                            {questionPool[currentIndex]?.options.map((opt, idx) => (
+                                                <button 
+                                                    key={idx}
+                                                    disabled={!!feedback}
+                                                    onClick={() => handleAnswer(idx)}
+                                                    className={`p-5 text-left rounded-3xl border-2 font-bold transition-all flex items-center gap-4 ${
+                                                        feedback === 'correct' && idx === questionPool[currentIndex].correct ? 'bg-green-500 border-green-500 text-white scale-[1.02]' :
+                                                        feedback === 'wrong' && selectedIdx === idx ? 'bg-red-500 border-red-500 text-white animate-shake' :
+                                                        feedback === 'wrong' && idx === questionPool[currentIndex].correct ? 'bg-green-50 border-green-200 text-green-700' :
+                                                        'bg-white border-slate-100 active:bg-orange-50 hover:border-orange-200'
+                                                    }`}
+                                                >
+                                                    <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 text-[10px] flex items-center justify-center border border-slate-200 text-slate-500 font-black">
+                                                        {String.fromCharCode(65 + idx)}
+                                                    </span>
+                                                    {opt}
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         )}
                     </main>
