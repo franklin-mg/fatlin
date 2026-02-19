@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Fatlin AI - Producción</title>
+    
+    <!-- PWA y Meta Tags -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F172A">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <style>
+        body { background-color: #0F172A; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        * { -webkit-tap-highlight-color: transparent; }
+        
+        /* Animaciones que estaban en tu código */
+        @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
+        @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes pulse-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        @keyframes shake { 0%, 100% { transform: translateX(0); } 25% { transform: translateX(5px); } 75% { transform: translateX(-5px); } }
+        
+        .animate-float { animation: float 4s ease-in-out infinite; }
+        .animate-spin-slow { animation: spin-slow 15s linear infinite; transform-origin: center; }
+        .animate-pulse-fast { animation: pulse-fast 1s infinite; }
+        .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <!-- Scripts de Dependencias (React, Babel para JSX, Lucide para Iconos) -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+
+    <!-- Carga de Firebase vía Módulos -->
+    <script type="module">
+        import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Exponer a global para que React (Babel) pueda verlos
+        window.FB = { 
+            initializeApp, getApps, getAuth, signInAnonymously, 
+            signInWithCustomToken, onAuthStateChanged, 
+            getFirestore, doc, setDoc, getDoc 
+        };
+    </script>
+
+    <!-- Lógica de la App (Tu código adaptado) -->
+    <script type="text/babel">
+        const { useState, useEffect, useCallback, useRef } = React;
+
+        // --- REFERENCIAS A FIREBASE DESDE EL GLOBAL ---
+        const { 
+            initializeApp, getApps, getAuth, signInAnonymously, 
+            signInWithCustomToken, onAuthStateChanged, 
+            getFirestore, doc, setDoc, getDoc 
+        } = window.FB;
+
+        // --- CONFIGURACIÓN (Tu configuración original) ---
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fatla-ai-v4';
+        const apiKey = ""; // API Key de Gemini
+        const MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+        const MAX_LIVES = 5;
+        const TOTAL_QUESTIONS_TO_LEVEL_UP = 15;
+        const REGEN_TIME_SECONDS = 90;
+
+        const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
+            apiKey: "",
+            authDomain: "fatla-ai.firebaseapp.com",
+            projectId: "fatla-ai",
+            storageBucket: "fatla-ai.appspot.com",
+            messagingSenderId: "123456789",
+            appId: "1:123456789:web:abc123"
+        };
+
+        const localFallback = [
+            { q: "¿Qué fase de PACIE se enfoca en la imagen corporativa del EVA?", options: ["Presencia", "Alcance", "Capacitación", "Interacción"], correct: 0 },
+            { q: "¿Cuál es el objetivo principal del Bloque Pascuas?", options: ["Despedida", "Graduación", "Recuperación", "Evaluación final"], correct: 2 }
+        ];
+
+        // Helper para Iconos de Lucide en HTML
+        const Icon = ({ name, size = 20, className = "" }) => {
+            const iconRef = useRef(null);
+            useEffect(() => {
+                if (window.lucide) {
+                    window.lucide.createIcons();
+                }
+            }, [name]);
+            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+        };
+
+        // Tu componente FatlinMascot
+        const FatlinMascot = ({ className = "", isCorrect = null }) => (
+            <div className={`relative ${className}`}>
+                <div className={`absolute inset-0 blur-[40px] rounded-full transition-colors duration-700 ${
+                    isCorrect === true ? 'bg-green-500/30' : 
+                    isCorrect === false ? 'bg-red-500/30' : 
+                    'bg-orange-500/20'
+                }`} />
+                <svg viewBox="0 0 200 200" className="w-full h-full relative z-10 drop-shadow-2xl animate-float">
+                    <defs>
+                        <linearGradient id="robotBody" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#334155" />
+                            <stop offset="100%" stopColor="#0f172a" />
+                        </linearGradient>
+                        <linearGradient id="scanLaser" x1="0%" y1="0%" x2="100%" y2="0%">
+                            <stop offset="0%" stopColor="transparent" />
+                            <stop offset="50%" stopColor={isCorrect === true ? "#22c55e" : isCorrect === false ? "#ef4444" : "#f97316"} />
+                            <stop offset="100%" stopColor="transparent" />
+                        </linearGradient>
+                    </defs>
+                    <circle cx="100" cy="100" r="95" fill="none" stroke="#f97316" strokeWidth="0.5" strokeDasharray="5,10" className="opacity-20 animate-spin-slow" />
+                    <path d="M40 70 Q40 30 100 30 T160 70 L160 130 Q160 170 100 170 T40 130 Z" fill="url(#robotBody)" stroke="#475569" strokeWidth="2" />
+                    <rect x="55" y="75" width="90" height="45" rx="10" fill="#020617" stroke="#1e293b" strokeWidth="2" />
+                    <g clipPath="inset(0 0 0 0 round 10px)">
+                        <rect x="55" y="75" width="20" height="45" fill="url(#scanLaser)">
+                            <animateTransform attributeName="transform" type="translate" from="-30 0" to="110 0" dur="2s" repeatCount="indefinite" />
+                        </rect>
+                        <g className="animate-pulse-fast">
+                            <rect x="75" y="92" width="12" height="12" rx="2" fill={isCorrect === true ? "#22c55e" : isCorrect === false ? "#ef4444" : "#f97316"} className="opacity-80" />
+                            <rect x="113" y="92" width="12" height="12" rx="2" fill={isCorrect === true ? "#22c55e" : isCorrect === false ? "#ef4444" : "#f97316"} className="opacity-80" />
+                        </g>
+                    </g>
+                    <line x1="80" y1="30" x2="70" y2="10" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="70" cy="10" r="4" fill="#f97316" className="animate-pulse" />
+                    <line x1="120" y1="30" x2="130" y2="10" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
+                    <circle cx="130" cy="10" r="4" fill="#f97316" className="animate-pulse" />
+                    <path d="M85 140 Q100 150 115 140" fill="none" stroke={isCorrect === true ? "#22c55e" : isCorrect === false ? "#ef4444" : "#f97316"} strokeWidth="3" strokeLinecap="round" opacity="0.6" />
+                </svg>
+            </div>
+        );
+
+        function App() {
+            const [user, setUser] = useState(null);
+            const [gameState, setGameState] = useState('landing');
+            const [questionPool, setQuestionPool] = useState(localFallback);
+            const [currentIndex, setCurrentIndex] = useState(0);
+            const [isLoading, setIsLoading] = useState(false);
+            const [feedback, setFeedback] = useState(null);
+            const [selectedIdx, setSelectedIdx] = useState(null);
+            const [timeLeft, setTimeLeft] = useState(0);
+            const [loadError, setLoadError] = useState(false);
+            const [progress, setProgress] = useState({
+                level: 1, maxLevelReached: 1, lives: MAX_LIVES, score: 0, 
+                questionsCorrectInCurrentLevel: 0, lastLifeLost: null, usedQuestions: []
+            });
+
+            const dbRef = useRef(null);
+            const authRef = useRef(null);
+            const isFetchingRef = useRef(false);
+
+            // Inicializar Firebase
+            useEffect(() => {
+                const interval = setInterval(() => {
+                    if (window.FB) {
+                        clearInterval(interval);
+                        const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
+                        authRef.current = getAuth(app);
+                        dbRef.current = getFirestore(app);
+
+                        const initAuth = async () => {
+                            if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                                await signInWithCustomToken(authRef.current, __initial_auth_token);
+                            } else {
+                                await signInAnonymously(authRef.current);
+                            }
+                        };
+                        initAuth();
+
+                        onAuthStateChanged(authRef.current, async (u) => {
+                            if (u) {
+                                setUser(u);
+                                const userRef = doc(dbRef.current, 'artifacts', appId, 'users', u.uid, 'settings', 'progress');
+                                try {
+                                    const snap = await getDoc(userRef);
+                                    if (snap.exists()) setProgress(prev => ({ ...prev, ...snap.data() }));
+                                } catch (err) {}
+                            }
+                        });
+                    }
+                }, 100);
+            }, []);
+
+            // Tu lógica de regeneración de vidas
+            useEffect(() => {
+                if (!progress.lastLifeLost || progress.lives >= MAX_LIVES) return;
+                const timer = setInterval(() => {
+                    const elapsed = Math.floor((Date.now() - progress.lastLifeLost) / 1000);
+                    const remaining = REGEN_TIME_SECONDS - elapsed;
+                    if (remaining <= 0) {
+                        handleProgressUpdate({
+                            lives: Math.min(MAX_LIVES, progress.lives + 1),
+                            lastLifeLost: progress.lives + 1 < MAX_LIVES ? Date.now() : null
+                        });
+                    } else setTimeLeft(remaining);
+                }, 1000);
+                return () => clearInterval(timer);
+            }, [progress.lastLifeLost, progress.lives]);
+
+            const handleProgressUpdate = async (updates) => {
+                const newProgress = { ...progress, ...updates };
+                if (newProgress.level > newProgress.maxLevelReached) newProgress.maxLevelReached = newProgress.level;
+                setProgress(newProgress);
+                if (user && dbRef.current) {
+                    try {
+                        await setDoc(doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'settings', 'progress'), newProgress, { merge: true });
+                    } catch (e) {}
+                }
+            };
+
+            const fetchQuestionsFromAI = async (level, history) => {
+                try {
+                    const response = await fetch(`${MODEL_URL}?key=${apiKey}`, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({
+                            contents: [{ parts: [{ text: `Genera 5 preguntas sobre el Módulo ${level} de FATLA/PACIE. JSON format: {"questions": [{"q": "?", "options": ["a","b","c","d"], "correct": 0}]}.` }] }],
+                            generationConfig: { responseMimeType: "application/json" }
+                        })
+                    });
+                    const result = await response.json();
+                    const data = JSON.parse(result.candidates[0].content.parts[0].text);
+                    return data.questions || [];
+                } catch (e) { return []; }
+            };
+
+            const loadQuestions = useCallback(async () => {
+                if (isFetchingRef.current) return;
+                isFetchingRef.current = true;
+                setIsLoading(true);
+                const q = await fetchQuestionsFromAI(progress.level, progress.usedQuestions);
+                if (q.length > 0) setQuestionPool(q);
+                setIsLoading(false);
+                isFetchingRef.current = false;
+            }, [progress.level]);
+
+            useEffect(() => {
+                if (gameState === 'landing' && !isLoading) loadQuestions();
+            }, [gameState]);
+
+            const handleAnswer = (index) => {
+                if (feedback || progress.lives <= 0) return;
+                const isCorrect = index === questionPool[currentIndex].correct;
+                setSelectedIdx(index);
+                setFeedback(isCorrect ? 'correct' : 'wrong');
+
+                const updates = isCorrect ? {
+                    score: progress.score + 25,
+                    questionsCorrectInCurrentLevel: progress.questionsCorrectInCurrentLevel + 1,
+                    usedQuestions: [...progress.usedQuestions, questionPool[currentIndex].q]
+                } : {
+                    lives: Math.max(0, progress.lives - 1),
+                    lastLifeLost: progress.lastLifeLost || Date.now()
+                };
+
+                if (isCorrect && (progress.questionsCorrectInCurrentLevel + 1) >= TOTAL_QUESTIONS_TO_LEVEL_UP) {
+                    updates.level = progress.level + 1;
+                    updates.questionsCorrectInCurrentLevel = 0;
+                }
+
+                handleProgressUpdate(updates);
+                setTimeout(() => {
+                    setFeedback(null); setSelectedIdx(null);
+                    setCurrentIndex(prev => (prev + 1) % questionPool.length);
+                }, 1000);
+            };
+
+            if (gameState === 'landing') {
+                return (
+                    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
+                        <FatlinMascot className="w-44 h-44 mb-8" />
+                        <h1 className="text-4xl font-black text-white mb-2 uppercase tracking-tighter">Fatlin <span className="text-orange-500">AI</span></h1>
+                        <p className="text-slate-500 text-[10px] font-bold tracking-[0.4em] uppercase mb-10">Sincronización Cerebral</p>
+                        <div className="grid grid-cols-2 gap-4 w-full max-w-xs mb-12">
+                            <div className="bg-slate-800/50 p-4 rounded-3xl border border-white/5">
+                                <div className="text-orange-500 font-black text-2xl">{progress.level}</div>
+                                <div className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Nivel</div>
+                            </div>
+                            <div className="bg-slate-800/50 p-4 rounded-3xl border border-white/5">
+                                <div className="text-green-500 font-black text-2xl">{progress.score}</div>
+                                <div className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Puntos</div>
+                            </div>
+                        </div>
+                        <button onClick={() => setGameState('playing')} className="bg-orange-500 text-white w-full max-w-xs py-5 rounded-full font-black text-lg shadow-xl active:scale-95 transition-all">INICIAR EXAMEN</button>
+                        <div className="mt-10">
+                            {isLoading ? <Icon name="loader-2" className="animate-spin text-slate-500" /> : <Icon name="check-circle-2" className="text-green-500 animate-pulse" />}
+                        </div>
+                    </div>
+                );
+            }
+
+            return (
+                <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
+                    <header className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 shadow-sm">
+                        <button onClick={() => setGameState('landing')} className="p-2 bg-slate-100 rounded-xl text-slate-400"><Icon name="x" /></button>
+                        <div className="flex items-center gap-2"><Icon name="trophy" className="text-orange-500" /><span className="font-black text-slate-800">{progress.score}</span></div>
+                        <div className="flex gap-1">{[...Array(MAX_LIVES)].map((_, i) => <Icon key={i} name="heart" className={i < progress.lives ? "text-red-500" : "text-slate-200"} />)}</div>
+                    </header>
+                    <main className="flex-1 flex flex-col items-center p-6 max-w-xl mx-auto w-full pt-10">
+                        {progress.lives <= 0 ? (
+                            <div className="text-center bg-white p-10 rounded-[3rem] shadow-xl w-full">
+                                <Icon name="clock" size={60} className="mx-auto text-orange-500 mb-6" />
+                                <h2 className="text-2xl font-black mb-4 uppercase">Sin Energía</h2>
+                                <p className="text-4xl font-black mb-8">{Math.floor(timeLeft/60)}:{(timeLeft%60).toString().padStart(2, '0')}</p>
+                                <button onClick={() => setGameState('landing')} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">VOLVER</button>
+                            </div>
+                        ) : (
+                            <div className="w-full text-center">
+                                <FatlinMascot className="w-32 h-32 mx-auto mb-8" isCorrect={feedback === 'correct' ? true : feedback === 'wrong' ? false : null} />
+                                <div className="mb-6 h-2 bg-slate-100 rounded-full overflow-hidden">
+                                    <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${(progress.questionsCorrectInCurrentLevel / TOTAL_QUESTIONS_TO_LEVEL_UP) * 100}%` }} />
+                                </div>
+                                <h2 className="text-2xl font-black text-slate-900 mb-8 leading-tight">{questionPool[currentIndex]?.q}</h2>
+                                <div className="grid gap-3 w-full">
+                                    {questionPool[currentIndex]?.options.map((opt, idx) => (
+                                        <button key={idx} onClick={() => handleAnswer(idx)} disabled={!!feedback} className={`p-5 text-left rounded-3xl border-2 font-bold transition-all ${
+                                            feedback === 'correct' && idx === questionPool[currentIndex].correct ? 'bg-green-500 border-green-500 text-white scale-[1.02]' :
+                                            feedback === 'wrong' && selectedIdx === idx ? 'bg-red-500 border-red-500 text-white animate-shake' :
+                                            'bg-white border-slate-100'
+                                        }`}>{opt}</button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+                    </main>
+                </div>
+            );
+        }
+
+        const root = ReactDOM.createRoot(document.getElementById('root'));
+        root.render(<App />);
+
+        // Registro de Service Worker
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(() => {});
+            });
+        }
+    </script>
+</body>
+</html>

@@ -1,0 +1,16 @@
+{
+"short_name": "FatlinAI",
+"name": "Fatlin AI: FATLA Learning",
+"icons": [
+{
+"src": "https://www.google.com/search?q=https://cdn-icons-png.flaticon.com/512/2592/2592186.png",
+"sizes": "512x512",
+"type": "image/png",
+"purpose": "any maskable"
+}
+],
+"start_url": ".",
+"display": "standalone",
+"theme_color": "#0F172A",
+"background_color": "#0F172A"
+}
