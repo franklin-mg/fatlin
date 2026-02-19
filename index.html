@@ -3,21 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Fatlin AI - Planeta Fatla</title>
+    <title>Fatlin AI - Sincronización FATLA</title>
     
-    <!-- PWA y Meta Tags -->
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#0F172A">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    
-    <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
-        body { background-color: #0F172A; margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+        body { background-color: #0F172A; margin: 0; font-family: system-ui, -apple-system, sans-serif; overflow-x: hidden; }
         * { -webkit-tap-highlight-color: transparent; }
         
-        /* Animaciones que estaban en tu código */
         @keyframes float { 0%, 100% { transform: translateY(0px); } 50% { transform: translateY(-15px); } }
         @keyframes spin-slow { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
         @keyframes pulse-fast { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
@@ -27,24 +20,25 @@
         .animate-spin-slow { animation: spin-slow 15s linear infinite; transform-origin: center; }
         .animate-pulse-fast { animation: pulse-fast 1s infinite; }
         .animate-shake { animation: shake 0.2s ease-in-out 0s 2; }
+
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f172a; }
+        ::-webkit-scrollbar-thumb { background: #334155; border-radius: 10px; }
     </style>
 </head>
 <body>
     <div id="root"></div>
 
-    <!-- Scripts de Dependencias (React, Babel para JSX, Lucide para Iconos) -->
     <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
     <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
     <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/@lucide/web"></script>
 
-    <!-- Carga de Firebase vía Módulos -->
     <script type="module">
         import { initializeApp, getApps } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
-        // Exponer a global para que React (Babel) pueda verlos
         window.FB = { 
             initializeApp, getApps, getAuth, signInAnonymously, 
             signInWithCustomToken, onAuthStateChanged, 
@@ -52,24 +46,15 @@
         };
     </script>
 
-    <!-- Lógica de la App (Tu código adaptado) -->
     <script type="text/babel">
         const { useState, useEffect, useCallback, useRef } = React;
 
-        // --- REFERENCIAS A FIREBASE DESDE EL GLOBAL ---
-        const { 
-            initializeApp, getApps, getAuth, signInAnonymously, 
-            signInWithCustomToken, onAuthStateChanged, 
-            getFirestore, doc, setDoc, getDoc 
-        } = window.FB;
-
-        // --- CONFIGURACIÓN (Tu configuración original) ---
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'fatla-ai-v4';
-        const apiKey = "AIzaSyCbq9ZhgOTMTjNWUebfD9k25sD9CJSacOU"; // API Key de Gemini
+        const API_KEY = "AIzaSyCbq9ZhgOTMTjNWUebfD9k25sD9CJSacOU";
         const MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
+        const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'fatla-ai-v4';
         const MAX_LIVES = 5;
-        const TOTAL_QUESTIONS_TO_LEVEL_UP = 15;
         const REGEN_TIME_SECONDS = 90;
+        const GOAL_PER_LEVEL = 15;
 
         const firebaseConfig = typeof __firebase_config !== 'undefined' ? JSON.parse(__firebase_config) : {
             apiKey: "",
@@ -80,23 +65,21 @@
             appId: "1:123456789:web:abc123"
         };
 
-        const localFallback = [
-            { q: "¿Qué fase de PACIE se enfoca en la imagen corporativa del EVA?", options: ["Presencia", "Alcance", "Capacitación", "Interacción"], correct: 0 },
-            { q: "¿Cuál es el objetivo principal del Bloque Cierre?", options: ["Despedida", "Graduación", "Recuperación", "Negociacion"], correct: 3 }
+        const fallbackQuestions = [
+            { q: "¿Qué significa la sigla PACIE?", options: ["Presencia, Alcance, Capacitación, Interacción, Elearning", "Plataforma, Aula, Comunidad, Internet, Estudiantes", "Pasos, Acciones, Contenidos, Ideas, Evaluación", "Procesos, Ambientes, Conocimiento, Interacción, Ética"], correct: 0 },
+            { q: "En la fase de ALCANCE, ¿cuál es el enfoque principal?", options: ["Instalar Moodle", "Planificar objetivos pedagógicos y tecnológicos", "Decorar el aula virtual", "Enviar correos a los alumnos"], correct: 1 },
+            { q: "¿Cuál es el propósito del Bloque de Cierre en un EVA?", options: ["Eliminar el curso", "Negociación y retroalimentación", "Solo poner la nota final", "Hacer publicidad de otros cursos"], correct: 1 },
+            { q: "¿Qué fase de PACIE busca evitar el abandono mediante la motivación constante?", options: ["Presencia", "Interacción", "Capacitación", "Tecnología"], correct: 1 },
+            { q: "¿Cuál es el sitio oficial de la Fundación para la Actualización Tecnológica de Latinoamérica?", options: ["www.google.com", "www.facebook.com", "www.fatla.org", "www.learning.com"], correct: 2 }
         ];
 
-        // Helper para Iconos de Lucide en HTML
-        const Icon = ({ name, size = 20, className = "" }) => {
-            const iconRef = useRef(null);
+        const LucideIcon = ({ name, size = 20, className = "" }) => {
             useEffect(() => {
-                if (window.lucide) {
-                    window.lucide.createIcons();
-                }
+                if (window.lucide) window.lucide.createIcons();
             }, [name]);
-            return <i data-lucide={name} className={className} style={{ width: size, height: size }}></i>;
+            return <i data-lucide={name} className={className} style={{ width: size, height: size, display: 'inline-block' }}></i>;
         };
 
-        // Tu componente FatlinMascot
         const FatlinMascot = ({ className = "", isCorrect = null }) => (
             <div className={`relative ${className}`}>
                 <div className={`absolute inset-0 blur-[40px] rounded-full transition-colors duration-700 ${
@@ -132,7 +115,6 @@
                     <circle cx="70" cy="10" r="4" fill="#f97316" className="animate-pulse" />
                     <line x1="120" y1="30" x2="130" y2="10" stroke="#475569" strokeWidth="3" strokeLinecap="round" />
                     <circle cx="130" cy="10" r="4" fill="#f97316" className="animate-pulse" />
-                    <path d="M85 140 Q100 150 115 140" fill="none" stroke={isCorrect === true ? "#22c55e" : isCorrect === false ? "#ef4444" : "#f97316"} strokeWidth="3" strokeLinecap="round" opacity="0.6" />
                 </svg>
             </div>
         );
@@ -140,27 +122,33 @@
         function App() {
             const [user, setUser] = useState(null);
             const [gameState, setGameState] = useState('landing');
-            const [questionPool, setQuestionPool] = useState(localFallback);
+            const [questionPool, setQuestionPool] = useState(fallbackQuestions);
             const [currentIndex, setCurrentIndex] = useState(0);
             const [isLoading, setIsLoading] = useState(false);
             const [feedback, setFeedback] = useState(null);
             const [selectedIdx, setSelectedIdx] = useState(null);
             const [timeLeft, setTimeLeft] = useState(0);
-            const [loadError, setLoadError] = useState(false);
+            const [isOnline, setIsOnline] = useState(navigator.onLine);
+            
             const [progress, setProgress] = useState({
-                level: 1, maxLevelReached: 1, lives: MAX_LIVES, score: 0, 
-                questionsCorrectInCurrentLevel: 0, lastLifeLost: null, usedQuestions: []
+                level: 1, score: 0, lives: MAX_LIVES, 
+                questionsCorrectInCurrentLevel: 0, 
+                lastLifeLost: null
             });
 
             const dbRef = useRef(null);
             const authRef = useRef(null);
-            const isFetchingRef = useRef(false);
 
-            // Inicializar Firebase
             useEffect(() => {
+                const handleOnline = () => setIsOnline(true);
+                const handleOffline = () => setIsOnline(false);
+                window.addEventListener('online', handleOnline);
+                window.addEventListener('offline', handleOffline);
+                
                 const interval = setInterval(() => {
                     if (window.FB) {
                         clearInterval(interval);
+                        const { initializeApp, getApps, getAuth, signInAnonymously, signInWithCustomToken, onAuthStateChanged, getFirestore } = window.FB;
                         const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApps()[0];
                         authRef.current = getAuth(app);
                         dbRef.current = getFirestore(app);
@@ -177,18 +165,18 @@
                         onAuthStateChanged(authRef.current, async (u) => {
                             if (u) {
                                 setUser(u);
-                                const userRef = doc(dbRef.current, 'artifacts', appId, 'users', u.uid, 'settings', 'progress');
-                                try {
-                                    const snap = await getDoc(userRef);
-                                    if (snap.exists()) setProgress(prev => ({ ...prev, ...snap.data() }));
-                                } catch (err) {}
+                                const userDoc = await window.FB.getDoc(window.FB.doc(dbRef.current, 'artifacts', APP_ID, 'users', u.uid, 'settings', 'progress'));
+                                if (userDoc.exists()) setProgress(prev => ({ ...prev, ...userDoc.data() }));
                             }
                         });
                     }
                 }, 100);
+                return () => {
+                    window.removeEventListener('online', handleOnline);
+                    window.removeEventListener('offline', handleOffline);
+                };
             }, []);
 
-            // Tu lógica de regeneración de vidas
             useEffect(() => {
                 if (!progress.lastLifeLost || progress.lives >= MAX_LIVES) return;
                 const timer = setInterval(() => {
@@ -206,79 +194,105 @@
 
             const handleProgressUpdate = async (updates) => {
                 const newProgress = { ...progress, ...updates };
-                if (newProgress.level > newProgress.maxLevelReached) newProgress.maxLevelReached = newProgress.level;
                 setProgress(newProgress);
                 if (user && dbRef.current) {
                     try {
-                        await setDoc(doc(dbRef.current, 'artifacts', appId, 'users', user.uid, 'settings', 'progress'), newProgress, { merge: true });
-                    } catch (e) {}
+                        await window.FB.setDoc(window.FB.doc(dbRef.current, 'artifacts', APP_ID, 'users', user.uid, 'settings', 'progress'), newProgress, { merge: true });
+                    } catch (e) { console.error("Error al guardar:", e); }
                 }
             };
 
-            const fetchQuestionsFromAI = async (level, history) => {
+            const fetchFromGemini = async (level) => {
                 try {
-                    const response = await fetch(`${MODEL_URL}?key=${apiKey}`, {
+                    const response = await fetch(`${MODEL_URL}?key=${API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ parts: [{ text: `Genera 5 preguntas sobre el Módulo ${level} de FATLA/PACIE. JSON format: {"questions": [{"q": "?", "options": ["a","b","c","d"], "correct": 0}]}.` }] }],
-                            generationConfig: { responseMimeType: "application/json" }
+                            contents: [{ 
+                                parts: [{ text: `Actúa como un experto en e-learning. Consulta www.fatla.org para validar la información. Genera 5 preguntas únicas de selección múltiple sobre el Módulo ${level} de FATLA y la metodología PACIE. Formato JSON estricto: {"questions": [{"q": "pregunta", "options": ["A", "B", "C", "D"], "correct": 0}]}.` }] 
+                            }],
+                            tools: [{ "google_search": {} }],
+                            generationConfig: { responseMimeType: "application/json", temperature: 1.0 }
                         })
                     });
                     const result = await response.json();
-                    const data = JSON.parse(result.candidates[0].content.parts[0].text);
-                    return data.questions || [];
-                } catch (e) { return []; }
+                    const text = result.candidates[0].content.parts[0].text;
+                    const data = JSON.parse(text);
+                    return data.questions && data.questions.length > 0 ? data.questions : fallbackQuestions;
+                } catch (e) {
+                    console.error("Gemini Error, usando fallback:", e);
+                    return fallbackQuestions;
+                }
             };
 
-            const loadQuestions = useCallback(async () => {
-                if (isFetchingRef.current) return;
-                isFetchingRef.current = true;
+            const startExam = async () => {
                 setIsLoading(true);
-                const q = await fetchQuestionsFromAI(progress.level, progress.usedQuestions);
-                if (q.length > 0) setQuestionPool(q);
+                const newQs = await fetchFromGemini(progress.level);
+                setQuestionPool(newQs);
+                setCurrentIndex(0);
                 setIsLoading(false);
-                isFetchingRef.current = false;
-            }, [progress.level]);
+                setGameState('playing');
+            };
 
-            useEffect(() => {
-                if (gameState === 'landing' && !isLoading) loadQuestions();
-            }, [gameState]);
-
-            const handleAnswer = (index) => {
-                if (feedback || progress.lives <= 0) return;
-                const isCorrect = index === questionPool[currentIndex].correct;
-                setSelectedIdx(index);
+            const handleAnswer = (idx) => {
+                if (feedback) return;
+                const currentQ = questionPool[currentIndex];
+                const isCorrect = idx === currentQ.correct;
+                setSelectedIdx(idx);
                 setFeedback(isCorrect ? 'correct' : 'wrong');
 
-                const updates = isCorrect ? {
-                    score: progress.score + 25,
-                    questionsCorrectInCurrentLevel: progress.questionsCorrectInCurrentLevel + 1,
-                    usedQuestions: [...progress.usedQuestions, questionPool[currentIndex].q]
-                } : {
-                    lives: Math.max(0, progress.lives - 1),
-                    lastLifeLost: progress.lastLifeLost || Date.now()
-                };
-
-                if (isCorrect && (progress.questionsCorrectInCurrentLevel + 1) >= TOTAL_QUESTIONS_TO_LEVEL_UP) {
-                    updates.level = progress.level + 1;
-                    updates.questionsCorrectInCurrentLevel = 0;
+                if (isCorrect) {
+                    const nextCorrect = progress.questionsCorrectInCurrentLevel + 1;
+                    const levelUp = nextCorrect >= GOAL_PER_LEVEL;
+                    handleProgressUpdate({
+                        score: progress.score + 25,
+                        questionsCorrectInCurrentLevel: levelUp ? 0 : nextCorrect,
+                        level: levelUp ? progress.level + 1 : progress.level
+                    });
+                    setTimeout(() => {
+                        setFeedback(null);
+                        setSelectedIdx(null);
+                        if (currentIndex + 1 < questionPool.length) {
+                            setCurrentIndex(currentIndex + 1);
+                        } else {
+                            startExam();
+                        }
+                    }, 1000);
+                } else {
+                    handleProgressUpdate({
+                        lives: Math.max(0, progress.lives - 1),
+                        lastLifeLost: progress.lastLifeLost || Date.now()
+                    });
+                    setTimeout(() => {
+                        setFeedback(null);
+                        setSelectedIdx(null);
+                        setCurrentIndex((currentIndex + 1) % questionPool.length);
+                    }, 1200);
                 }
-
-                handleProgressUpdate(updates);
-                setTimeout(() => {
-                    setFeedback(null); setSelectedIdx(null);
-                    setCurrentIndex(prev => (prev + 1) % questionPool.length);
-                }, 1000);
             };
+
+            // Componente del Indicador de Estado
+            const ReadyIndicator = () => (
+                <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-2 bg-slate-900/80 backdrop-blur-md px-4 py-2 rounded-full border border-white/10 shadow-2xl transition-all">
+                    <div className={`w-2 h-2 rounded-full ${
+                        isLoading ? 'bg-orange-500 animate-pulse' : 
+                        isOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 
+                        'bg-red-500'
+                    }`} />
+                    <span className="text-[10px] font-black uppercase tracking-[0.2em] text-white/80">
+                        {isLoading ? 'Sincronizando...' : isOnline ? 'System Ready' : 'Offline'}
+                    </span>
+                </div>
+            );
 
             if (gameState === 'landing') {
                 return (
-                    <div className="min-h-screen flex flex-col items-center justify-center p-6 text-center">
-                        <FatlinMascot className="w-44 h-44 mb-8" />
+                    <div className="min-h-screen bg-[#0F172A] flex flex-col items-center justify-center p-6 text-center">
+                        <FatlinMascot className="w-48 h-48 mb-8" />
                         <h1 className="text-4xl font-black text-white mb-2 uppercase tracking-tighter">Fatlin <span className="text-orange-500">AI</span></h1>
-                        <p className="text-slate-500 text-[10px] font-bold tracking-[0.4em] uppercase mb-10">Sincronización Cerebral</p>
-                        <div className="grid grid-cols-2 gap-4 w-full max-w-xs mb-12">
+                        <p className="text-slate-500 text-[10px] font-bold tracking-[0.4em] uppercase mb-12">Grounding: www.fatla.org</p>
+                        
+                        <div className="grid grid-cols-2 gap-4 w-full max-w-xs mb-10">
                             <div className="bg-slate-800/50 p-4 rounded-3xl border border-white/5">
                                 <div className="text-orange-500 font-black text-2xl">{progress.level}</div>
                                 <div className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Nivel</div>
@@ -288,62 +302,93 @@
                                 <div className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Puntos</div>
                             </div>
                         </div>
-                        <button onClick={() => setGameState('playing')} className="bg-orange-500 text-white w-full max-w-xs py-5 rounded-full font-black text-lg shadow-xl active:scale-95 transition-all">INICIAR EXAMEN</button>
-                        <div className="mt-10">
-                            {isLoading ? <Icon name="loader-2" className="animate-spin text-slate-500" /> : <Icon name="check-circle-2" className="text-green-500 animate-pulse" />}
-                        </div>
+
+                        <button 
+                            disabled={isLoading}
+                            onClick={startExam} 
+                            className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-700 text-white w-full max-w-xs py-5 rounded-full font-black text-lg transition-all active:scale-95 shadow-xl flex items-center justify-center gap-3 mb-4"
+                        >
+                            {isLoading ? <LucideIcon name="loader-2" className="animate-spin" /> : "SINCRONIZAR AHORA"}
+                        </button>
+                        
+                        <ReadyIndicator />
                     </div>
                 );
             }
 
             return (
-                <div className="min-h-screen bg-[#F8FAFC] flex flex-col">
-                    <header className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 shadow-sm">
-                        <button onClick={() => setGameState('landing')} className="p-2 bg-slate-100 rounded-xl text-slate-400"><Icon name="x" /></button>
-                        <div className="flex items-center gap-2"><Icon name="trophy" className="text-orange-500" /><span className="font-black text-slate-800">{progress.score}</span></div>
-                        <div className="flex gap-1">{[...Array(MAX_LIVES)].map((_, i) => <Icon key={i} name="heart" className={i < progress.lives ? "text-red-500" : "text-slate-200"} />)}</div>
+                <div className="min-h-screen bg-[#F8FAFC] flex flex-col font-sans relative">
+                    <header className="bg-white border-b px-6 py-4 flex items-center justify-between sticky top-0 z-20">
+                        <button onClick={() => setGameState('landing')} className="p-2 bg-slate-100 rounded-xl text-slate-400">
+                            <LucideIcon name="x" size={20} />
+                        </button>
+                        <div className="flex items-center gap-2">
+                            <LucideIcon name="trophy" size={18} className="text-orange-500" />
+                            <span className="font-black text-slate-800">{progress.score}</span>
+                        </div>
+                        <div className="flex gap-1">
+                            {[...Array(MAX_LIVES)].map((_, i) => (
+                                <LucideIcon key={i} name="heart" size={18} className={i < progress.lives ? "text-red-500" : "text-slate-200"} />
+                            ))}
+                        </div>
                     </header>
-                    <main className="flex-1 flex flex-col items-center p-6 max-w-xl mx-auto w-full pt-10">
+
+                    <main className="flex-1 flex flex-col items-center p-6 max-w-xl mx-auto w-full pt-8 pb-24">
                         {progress.lives <= 0 ? (
                             <div className="text-center bg-white p-10 rounded-[3rem] shadow-xl w-full">
-                                <Icon name="clock" size={60} className="mx-auto text-orange-500 mb-6" />
-                                <h2 className="text-2xl font-black mb-4 uppercase">Sin Energía</h2>
+                                <LucideIcon name="clock" size={60} className="mx-auto text-orange-500 mb-6" />
+                                <h2 className="text-2xl font-black mb-4 uppercase">Cargando Energía</h2>
                                 <p className="text-4xl font-black mb-8">{Math.floor(timeLeft/60)}:{(timeLeft%60).toString().padStart(2, '0')}</p>
                                 <button onClick={() => setGameState('landing')} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">VOLVER</button>
                             </div>
                         ) : (
                             <div className="w-full text-center">
-                                <FatlinMascot className="w-32 h-32 mx-auto mb-8" isCorrect={feedback === 'correct' ? true : feedback === 'wrong' ? false : null} />
-                                <div className="mb-6 h-2 bg-slate-100 rounded-full overflow-hidden">
-                                    <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${(progress.questionsCorrectInCurrentLevel / TOTAL_QUESTIONS_TO_LEVEL_UP) * 100}%` }} />
+                                <FatlinMascot className="w-32 h-32 mx-auto mb-6" isCorrect={feedback === 'correct' ? true : feedback === 'wrong' ? false : null} />
+                                
+                                <div className="mb-8">
+                                    <div className="flex justify-between text-[10px] font-black text-slate-400 uppercase mb-2">
+                                        <span>Progreso Nivel {progress.level}</span>
+                                        <span>{Math.round((progress.questionsCorrectInCurrentLevel / GOAL_PER_LEVEL) * 100)}%</span>
+                                    </div>
+                                    <div className="h-2 bg-slate-100 rounded-full overflow-hidden">
+                                        <div className="h-full bg-orange-500 transition-all duration-500" style={{ width: `${(progress.questionsCorrectInCurrentLevel / GOAL_PER_LEVEL) * 100}%` }} />
+                                    </div>
                                 </div>
-                                <h2 className="text-2xl font-black text-slate-900 mb-8 leading-tight">{questionPool[currentIndex]?.q}</h2>
+
+                                <h2 className="text-xl md:text-2xl font-black text-slate-900 mb-8 leading-tight min-h-[5rem]">
+                                    {questionPool[currentIndex]?.q}
+                                </h2>
+                                
                                 <div className="grid gap-3 w-full">
                                     {questionPool[currentIndex]?.options.map((opt, idx) => (
-                                        <button key={idx} onClick={() => handleAnswer(idx)} disabled={!!feedback} className={`p-5 text-left rounded-3xl border-2 font-bold transition-all ${
-                                            feedback === 'correct' && idx === questionPool[currentIndex].correct ? 'bg-green-500 border-green-500 text-white scale-[1.02]' :
-                                            feedback === 'wrong' && selectedIdx === idx ? 'bg-red-500 border-red-500 text-white animate-shake' :
-                                            'bg-white border-slate-100'
-                                        }`}>{opt}</button>
+                                        <button 
+                                            key={idx}
+                                            disabled={!!feedback}
+                                            onClick={() => handleAnswer(idx)}
+                                            className={`p-5 text-left rounded-3xl border-2 font-bold transition-all flex items-center gap-4 ${
+                                                feedback === 'correct' && idx === questionPool[currentIndex].correct ? 'bg-green-500 border-green-500 text-white scale-[1.02]' :
+                                                feedback === 'wrong' && selectedIdx === idx ? 'bg-red-500 border-red-500 text-white animate-shake' :
+                                                feedback === 'wrong' && idx === questionPool[currentIndex].correct ? 'bg-green-50 border-green-200 text-green-700' :
+                                                'bg-white border-slate-100 active:bg-orange-50'
+                                            }`}
+                                        >
+                                            <span className="flex-shrink-0 w-8 h-8 rounded-full bg-slate-100 text-[10px] flex items-center justify-center border border-slate-200 text-slate-500 font-black">
+                                                {String.fromCharCode(65 + idx)}
+                                            </span>
+                                            {opt}
+                                        </button>
                                     ))}
                                 </div>
                             </div>
                         )}
                     </main>
+                    <ReadyIndicator />
                 </div>
             );
         }
 
         const root = ReactDOM.createRoot(document.getElementById('root'));
         root.render(<App />);
-
-        // Registro de Service Worker
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js').catch(() => {});
-            });
-        }
     </script>
 </body>
-
 </html>
