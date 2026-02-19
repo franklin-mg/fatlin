@@ -73,11 +73,11 @@
             { q: "¿Cuál es el sitio oficial de la Fundación para la Actualización Tecnológica de Latinoamérica?", options: ["www.google.com", "www.facebook.com", "www.fatla.org", "www.learning.com"], correct: 2 }
         ];
 
-        const LucideIcon = ({ name, size = 20, className = "" }) => {
+        const LucideIcon = ({ name, size = 20, className = "", fill = "none" }) => {
             useEffect(() => {
                 if (window.lucide) window.lucide.createIcons();
             }, [name]);
-            return <i data-lucide={name} className={className} style={{ width: size, height: size, display: 'inline-block' }}></i>;
+            return <i data-lucide={name} className={className} style={{ width: size, height: size, display: 'inline-block' }} data-lucide-fill={fill}></i>;
         };
 
         const FatlinMascot = ({ className = "", isCorrect = null }) => (
@@ -123,6 +123,7 @@
             const [user, setUser] = useState(null);
             const [gameState, setGameState] = useState('landing');
             const [questionPool, setQuestionPool] = useState(fallbackQuestions);
+            const [questionHistory, setQuestionHistory] = useState([]);
             const [currentIndex, setCurrentIndex] = useState(0);
             const [isLoading, setIsLoading] = useState(false);
             const [feedback, setFeedback] = useState(null);
@@ -204,13 +205,19 @@
 
             const fetchFromGemini = async (level) => {
                 try {
+                    // Enviamos el historial para evitar repeticiones
+                    const historyText = questionHistory.slice(-15).join(", ");
+                    const prompt = `Actúa como un experto en e-learning y FATLA. Consulta www.fatla.org para validar la información. 
+                    Genera exactamente 5 preguntas de selección múltiple sobre el Módulo ${level} de FATLA y la metodología PACIE. 
+                    MUY IMPORTANTE: No repitas estas preguntas que ya se hicieron: [${historyText}]. 
+                    Varía los temas (Presencia, Alcance, Capacitación, Interacción, Elearning).
+                    Formato JSON estricto: {"questions": [{"q": "pregunta", "options": ["A", "B", "C", "D"], "correct": 0}]}.`;
+
                     const response = await fetch(`${MODEL_URL}?key=${API_KEY}`, {
                         method: 'POST',
                         headers: { 'Content-Type': 'application/json' },
                         body: JSON.stringify({
-                            contents: [{ 
-                                parts: [{ text: `Actúa como un experto en e-learning y FATLA. Consulta www.fatla.org para validar la información. Genera exactamente 5 preguntas de selección múltiple sobre el Módulo ${level} de FATLA y la metodología PACIE. ASEGÚRATE DE QUE SEAN DIFERENTES A LAS ANTERIORES. Formato JSON estricto: {"questions": [{"q": "pregunta", "options": ["A", "B", "C", "D"], "correct": 0}]}.` }] 
-                            }],
+                            contents: [{ parts: [{ text: prompt }] }],
                             tools: [{ "google_search": {} }],
                             generationConfig: { responseMimeType: "application/json", temperature: 1.0 }
                         })
@@ -218,7 +225,13 @@
                     const result = await response.json();
                     const text = result.candidates[0].content.parts[0].text;
                     const data = JSON.parse(text);
-                    return data.questions && data.questions.length > 0 ? data.questions : fallbackQuestions;
+                    
+                    if (data.questions && data.questions.length > 0) {
+                        const newTitles = data.questions.map(q => q.q);
+                        setQuestionHistory(prev => [...prev, ...newTitles]);
+                        return data.questions;
+                    }
+                    return fallbackQuestions;
                 } catch (e) {
                     console.error("Gemini Error, usando fallback:", e);
                     return fallbackQuestions;
@@ -262,8 +275,6 @@
                     setTimeout(() => {
                         setFeedback(null);
                         setSelectedIdx(null);
-                        
-                        // Si se agotaron las 5 preguntas del pool actual, pedir nuevas automáticamente
                         if (currentIndex + 1 >= questionPool.length) {
                             refreshQuestions();
                         } else {
@@ -273,12 +284,11 @@
                 } else {
                     handleProgressUpdate({
                         lives: Math.max(0, progress.lives - 1),
-                        lastLifeLost: progress.lastLifeLost || Date.now()
+                        lastLifeLost: Date.now()
                     });
                     setTimeout(() => {
                         setFeedback(null);
                         setSelectedIdx(null);
-                        // Rotar a la siguiente aunque falle, para no estancarse
                         if (currentIndex + 1 >= questionPool.length) {
                             refreshQuestions();
                         } else {
@@ -314,17 +324,20 @@
                                 <div className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Nivel</div>
                             </div>
                             <div className="bg-slate-800/50 p-4 rounded-3xl border border-white/5">
-                                <div className="text-green-500 font-black text-2xl">{progress.score}</div>
+                                <div className="text-orange-500 font-black text-2xl flex items-center justify-center gap-1">
+                                    <LucideIcon name="flame" size={24} className="text-orange-500 fill-orange-500" />
+                                    {progress.score}
+                                </div>
                                 <div className="text-slate-500 text-[9px] font-bold uppercase tracking-widest">Puntos</div>
                             </div>
                         </div>
 
                         <button 
-                            disabled={isLoading}
+                            disabled={isLoading || (progress.lives <= 0)}
                             onClick={startExam} 
                             className="bg-orange-500 hover:bg-orange-600 disabled:bg-slate-700 text-white w-full max-w-xs py-5 rounded-full font-black text-lg transition-all active:scale-95 shadow-xl flex items-center justify-center gap-3 mb-4"
                         >
-                            {isLoading ? <LucideIcon name="loader-2" className="animate-spin" /> : "SINCRONIZAR AHORA"}
+                            {isLoading ? <LucideIcon name="loader-2" className="animate-spin" /> : progress.lives <= 0 ? "SIN ENERGÍA" : "SINCRONIZAR AHORA"}
                         </button>
                         
                         <ReadyIndicator />
@@ -339,12 +352,18 @@
                             <LucideIcon name="x" size={20} />
                         </button>
                         <div className="flex items-center gap-2">
-                            <LucideIcon name="trophy" size={18} className="text-orange-500" />
-                            <span className="font-black text-slate-800">{progress.score}</span>
+                            <LucideIcon name="flame" size={20} className="text-orange-500 fill-orange-500" />
+                            <span className="font-black text-slate-800 text-lg">{progress.score}</span>
                         </div>
-                        <div className="flex gap-1">
+                        <div className="flex gap-1 bg-red-50 px-3 py-1.5 rounded-full border border-red-100">
                             {[...Array(MAX_LIVES)].map((_, i) => (
-                                <LucideIcon key={i} name="heart" size={18} className={i < progress.lives ? "text-red-500" : "text-slate-200"} />
+                                <LucideIcon 
+                                    key={i} 
+                                    name="heart" 
+                                    size={18} 
+                                    className={i < progress.lives ? "text-red-500 fill-red-500" : "text-slate-200"} 
+                                    fill={i < progress.lives ? "currentColor" : "none"}
+                                />
                             ))}
                         </div>
                     </header>
@@ -354,8 +373,8 @@
                             <div className="text-center bg-white p-10 rounded-[3rem] shadow-xl w-full">
                                 <LucideIcon name="clock" size={60} className="mx-auto text-orange-500 mb-6" />
                                 <h2 className="text-2xl font-black mb-4 uppercase">Cargando Energía</h2>
-                                <p className="text-4xl font-black mb-8">{Math.floor(timeLeft/60)}:{(timeLeft%60).toString().padStart(2, '0')}</p>
-                                <button onClick={() => setGameState('landing')} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">VOLVER</button>
+                                <p className="text-4xl font-black mb-8 text-slate-800">{Math.floor(timeLeft/60)}:{(timeLeft%60).toString().padStart(2, '0')}</p>
+                                <button onClick={() => setGameState('landing')} className="w-full bg-slate-900 text-white py-4 rounded-2xl font-black">VOLVER AL MENÚ</button>
                             </div>
                         ) : (
                             <div className="w-full text-center">
