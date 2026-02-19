@@ -4,7 +4,9 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Fatlin AI - Sincronización FATLA</title>
-    
+     <!-- Referencia al Manifest (Línea añadida) -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0F172A">
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -44,6 +46,16 @@
             signInWithCustomToken, onAuthStateChanged, 
             getFirestore, doc, setDoc, getDoc 
         };
+    // Registro del Service Worker (Bloque añadido)
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(reg => console.log('SW registrado con éxito'))
+                    .catch(err => console.log('Error registrando SW', err));
+            });
+        }
+    
+    
     </script>
 
     <script type="text/babel">
@@ -436,3 +448,4 @@
     </script>
 </body>
 </html>
+
