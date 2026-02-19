@@ -4,9 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
     <title>Fatlin AI - Sincronización FATLA</title>
-     <!-- Referencia al Manifest (Línea añadida) -->
+    
+    <!-- Referencia al Manifest (Línea añadida) -->
     <link rel="manifest" href="manifest.json">
     <meta name="theme-color" content="#0F172A">
+    
     <script src="https://cdn.tailwindcss.com"></script>
     
     <style>
@@ -46,7 +48,8 @@
             signInWithCustomToken, onAuthStateChanged, 
             getFirestore, doc, setDoc, getDoc 
         };
-    // Registro del Service Worker (Bloque añadido)
+
+        // Registro del Service Worker (Bloque añadido)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('./sw.js')
@@ -54,8 +57,6 @@
                     .catch(err => console.log('Error registrando SW', err));
             });
         }
-    
-    
     </script>
 
     <script type="text/babel">
@@ -215,14 +216,13 @@
                 }
             };
 
-            const fetchFromGemini = async (level) => {
+            const fetchFromGemini = async (level, amount = 10) => {
                 try {
-                    // Enviamos el historial para evitar repeticiones
-                    const historyText = questionHistory.slice(-15).join(", ");
+                    const historyText = questionHistory.slice(-30).join(" | ");
                     const prompt = `Actúa como un experto en e-learning y FATLA. Consulta www.fatla.org para validar la información. 
-                    Genera exactamente 5 preguntas de selección múltiple sobre el Módulo ${level} de FATLA y la metodología PACIE. 
-                    MUY IMPORTANTE: No repitas estas preguntas que ya se hicieron: [${historyText}]. 
-                    Varía los temas (Presencia, Alcance, Capacitación, Interacción, Elearning).
+                    Genera exactamente ${amount} preguntas de selección múltiple sobre el Módulo ${level} de FATLA y la metodología PACIE. 
+                    MUY IMPORTANTE: No repitas ninguna de estas preguntas: [${historyText}]. 
+                    Varía los temas: Presencia, Alcance, Capacitación, Interacción, Elearning.
                     Formato JSON estricto: {"questions": [{"q": "pregunta", "options": ["A", "B", "C", "D"], "correct": 0}]}.`;
 
                     const response = await fetch(`${MODEL_URL}?key=${API_KEY}`, {
@@ -252,19 +252,16 @@
 
             const startExam = async () => {
                 setIsLoading(true);
-                const newQs = await fetchFromGemini(progress.level);
+                const newQs = await fetchFromGemini(progress.level, 10);
                 setQuestionPool(newQs);
                 setCurrentIndex(0);
                 setIsLoading(false);
                 setGameState('playing');
             };
 
-            const refreshQuestions = async () => {
-                setIsLoading(true);
-                const newQs = await fetchFromGemini(progress.level);
-                setQuestionPool(newQs);
-                setCurrentIndex(0);
-                setIsLoading(false);
+            const expandQuestionPool = async () => {
+                const additionalQs = await fetchFromGemini(progress.level, 10);
+                setQuestionPool(prev => [...prev, ...additionalQs]);
             };
 
             const handleAnswer = (idx) => {
@@ -287,10 +284,14 @@
                     setTimeout(() => {
                         setFeedback(null);
                         setSelectedIdx(null);
-                        if (currentIndex + 1 >= questionPool.length) {
-                            refreshQuestions();
+                        const nextIdx = currentIndex + 1;
+                        if (questionPool.length - nextIdx <= 5) {
+                            expandQuestionPool();
+                        }
+                        if (nextIdx >= questionPool.length) {
+                            startExam();
                         } else {
-                            setCurrentIndex(currentIndex + 1);
+                            setCurrentIndex(nextIdx);
                         }
                     }, 1000);
                 } else {
@@ -301,10 +302,14 @@
                     setTimeout(() => {
                         setFeedback(null);
                         setSelectedIdx(null);
-                        if (currentIndex + 1 >= questionPool.length) {
-                            refreshQuestions();
+                        const nextIdx = currentIndex + 1;
+                        if (questionPool.length - nextIdx <= 5) {
+                            expandQuestionPool();
+                        }
+                        if (nextIdx >= questionPool.length) {
+                            startExam();
                         } else {
-                            setCurrentIndex(currentIndex + 1);
+                            setCurrentIndex(nextIdx);
                         }
                     }, 1200);
                 }
@@ -402,7 +407,7 @@
                                     </div>
                                 </div>
 
-                                {isLoading ? (
+                                {isLoading && questionPool.length === 0 ? (
                                     <div className="flex flex-col items-center justify-center min-h-[10rem] animate-pulse">
                                         <LucideIcon name="refresh-cw" className="animate-spin text-orange-500 mb-4" size={40} />
                                         <p className="text-slate-400 font-bold uppercase text-xs tracking-widest">Sincronizando nuevas preguntas...</p>
@@ -448,4 +453,3 @@
     </script>
 </body>
 </html>
-
