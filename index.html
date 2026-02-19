@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Fatlin AI - Producción</title>
+    <title>Fatlin AI - Planeta Fatla</title>
     
     <!-- PWA y Meta Tags -->
     <link rel="manifest" href="manifest.json">
@@ -65,7 +65,7 @@
 
         // --- CONFIGURACIÓN (Tu configuración original) ---
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'fatla-ai-v4';
-        const apiKey = ""; // API Key de Gemini
+        const apiKey = "AIzaSyCbq9ZhgOTMTjNWUebfD9k25sD9CJSacOU"; // API Key de Gemini
         const MODEL_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent";
         const MAX_LIVES = 5;
         const TOTAL_QUESTIONS_TO_LEVEL_UP = 15;
@@ -82,7 +82,7 @@
 
         const localFallback = [
             { q: "¿Qué fase de PACIE se enfoca en la imagen corporativa del EVA?", options: ["Presencia", "Alcance", "Capacitación", "Interacción"], correct: 0 },
-            { q: "¿Cuál es el objetivo principal del Bloque Pascuas?", options: ["Despedida", "Graduación", "Recuperación", "Evaluación final"], correct: 2 }
+            { q: "¿Cuál es el objetivo principal del Bloque Cierre?", options: ["Despedida", "Graduación", "Recuperación", "Negociacion"], correct: 3 }
         ];
 
         // Helper para Iconos de Lucide en HTML
@@ -345,4 +345,5 @@
         }
     </script>
 </body>
+
 </html>
