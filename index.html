@@ -4,10 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 
-     <!-- ═══════════════════════════════════════════
-         index1216m - FranklinMg 03032026
-    ═══════════════════════════════════════════ -->
-     <!-- ═══════════════════════════════════════════
+    <!-- ═══════════════════════════════════════════
          PWA — METAETIQUETAS ESENCIALES
     ═══════════════════════════════════════════ -->
     <title>Fatlin AI - Adventure</title>
@@ -133,7 +130,9 @@
         .hdiv  { width:1px;height:18px;background:#e2e8f0;flex-shrink:0; }
         .hbtn  { padding:6px 9px;border-radius:12px;border:none;cursor:pointer;font-family:'Inter',sans-serif;font-weight:600;transition:transform .15s,background .15s;display:flex;align-items:center;gap:4px;font-size:.82rem; }
         .hbtn:active { transform:scale(.92); }
-        #hud-avatar { width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.1rem;border:2px solid #e2e8f0;background:#f8fafc;cursor:pointer;transition:border-color .2s,transform .2s;flex-shrink:0; }
+        #hud-avatar { width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:1.3rem;border:2px solid #e2e8f0;background:#f8fafc;cursor:pointer;transition:border-color .2s,transform .2s;flex-shrink:0;pointer-events:all;-webkit-tap-highlight-color:transparent; }
+        #hud-avatar:hover { border-color:#0369a1;transform:scale(1.1); }
+        #hud-avatar:active { transform:scale(.95); }
         #hud-avatar:hover { border-color:var(--primary);transform:scale(1.1); }
         #stat-timer { font-size:10px;font-weight:700;color:#0284c7;background:#e0f2fe;padding:2px 8px;border-radius:20px;display:none; }
         @media(max-width:480px){ .hud-inner{gap:5px;padding:7px 10px;} }
@@ -228,10 +227,34 @@
 
         /* AVATAR */
         #modal-avatar { position:fixed;inset:0;background:rgba(8,47,73,.96);backdrop-filter:blur(12px);z-index:4500;display:none;align-items:center;justify-content:center;padding:16px; }
+        #modal-logros { position:fixed;inset:0;background:rgba(8,47,73,.96);backdrop-filter:blur(12px);z-index:4500;display:none;align-items:center;justify-content:center;padding:16px; }
+        #modal-logros.active { display:flex;animation:fadeIn .2s ease; }
+        .logros-card { background:white;border-radius:20px;padding:16px;width:92%;max-width:340px;max-height:80vh;overflow-y:auto; }
+        .logros-header { display:flex;align-items:center;justify-content:space-between;margin-bottom:20px; }
+        .logros-title { font-size:1.2rem;font-weight:800;color:#075985; }
+        .logros-user { display:flex;align-items:center;gap:10px;margin-bottom:20px;padding:14px;background:#f0f9ff;border-radius:14px; }
+        .logros-avatar { font-size:2rem;width:52px;height:52px;display:flex;align-items:center;justify-content:center;background:#e0f2fe;border-radius:50%; }
+        .logros-info { flex:1; }
+        .logros-name { font-weight:800;color:#0c4a6e;font-size:1rem; }
+        .logros-level { font-size:.85rem;color:#0369a1;font-weight:600; }
+        .logros-section { margin-bottom:18px; }
+        .logros-section-title { font-size:.75rem;font-weight:700;color:#64748b;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px; }
+        .logros-grid { display:grid;grid-template-columns:1fr 1fr;gap:8px; }
+        .logro-item { background:#f8fafc;border-radius:10px;padding:8px;text-align:center;border:2px solid #e2e8f0; }
+        .logro-item.earned { background:#f0fdf4;border-color:#86efac; }
+        .logro-item.locked { opacity:.4; }
+        .logro-emoji { font-size:1.4rem;display:block;margin-bottom:2px; }
+        .logro-label { font-size:.68rem;font-weight:700;color:#374151;line-height:1.2; }
+        .diploma-item { display:flex;align-items:center;gap:8px;background:#fffbeb;border:2px solid #fde68a;border-radius:10px;padding:8px;margin-bottom:6px; }
+        .diploma-emoji { font-size:1.5rem; }
+        .diploma-info { flex:1; }
+        .diploma-title { font-weight:700;color:#92400e;font-size:.78rem; }
+        .diploma-sub { font-size:.75rem;color:#b45309; }
+        .no-logros { text-align:center;color:#94a3b8;font-size:.9rem;padding:20px; }
         #modal-avatar.active { display:flex;animation:fadeIn .2s ease; }
-        .avcard { background:white;border-radius:2rem;padding:1.75rem;max-width:400px;width:100%;box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:center; }
-        .avgrid { display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin:1.25rem 0; }
-        .avopt { width:100%;aspect-ratio:1;border-radius:1rem;border:3px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.8rem;cursor:pointer;transition:border-color .2s,transform .2s;background:#f8fafc; }
+        .avcard { background:white;border-radius:2rem;padding:1.25rem;max-width:320px;width:90%;box-shadow:0 30px 80px rgba(0,0,0,.5);text-align:center;overflow:hidden; }
+        .avgrid { display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:1rem 0; }
+        .avopt { width:100%;aspect-ratio:1;border-radius:1rem;border:3px solid #e2e8f0;display:flex;align-items:center;justify-content:center;font-size:1.4rem;cursor:pointer;transition:border-color .2s,transform .2s;background:#f8fafc; }
         .avopt:hover { border-color:var(--primary);background:#eff6ff;transform:scale(1.08); }
         .avopt.selected { border-color:var(--primary);background:#eff6ff;box-shadow:0 0 0 3px rgba(14,165,233,.25);transform:scale(1.1); }
 
@@ -677,6 +700,7 @@
             <div class="hdiv"></div>
             <div class="hstat" style="max-width:80px"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#94a3b8" stroke-width="2.5" style="flex-shrink:0"><circle cx="12" cy="8" r="4"/><path d="M4 20c0-4 3.6-7 8-7s8 3 8 7"/></svg><span id="stat-user" style="font-size:11px;font-weight:700;color:#1e293b;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">...</span></div>
             <div style="display:flex;gap:4px">
+                <button id="btn-logros" class="hbtn" style="background:#f0fdf4;color:#16a34a" title="Mis Logros" onclick="openLogros()">🏅</button>
                 <button id="btn-ranking" class="hbtn" style="background:#fef3c7;color:#b45309"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></button>
                 <button id="btn-gocur" class="hbtn" style="background:#e0f2fe;color:#0284c7"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 22s-8-4.5-8-11.8A8 8 0 0 1 12 2a8 8 0 0 1 8 8.2c0 7.3-8 11.8-8 11.8z"/><circle cx="12" cy="10" r="2.5"/></svg></button>
                 <div id="hud-lang">
@@ -991,41 +1015,41 @@ window.addEventListener('appinstalled', function() {
 });
 </script>
 
-<!-- PATRON DOS LLAVES -->
+<!-- ═══════════════════════════════════════════════════════════════
+     FUNCIÓN GLOBAL splashChooseLang — DEBE estar ANTES del módulo
+     para que el onclick inline del HTML pueda encontrarla.
+═══════════════════════════════════════════════════════════════ -->
 <script>
-window._splashLangChosen = null;   // llave 1: usuario eligio idioma
-window._firebaseReady    = false;  // llave 2: Firebase respondio
-
-window._doHideSplash = function() {
-  var s = document.getElementById("splash");
-  if (!s || s.style.display === "none") return;
-  s.style.opacity = "0";
-  setTimeout(function() { s.style.display = "none"; }, 400);
-};
-
-// Avanza solo cuando AMBAS llaves estan abiertas
-window._tryAdvance = function() {
-  if (!window._splashLangChosen) return;
-  if (!window._firebaseReady)    return;
-  window._doHideSplash();
-};
+// ── Estado mínimo necesario antes de que cargue el módulo ──────
+window._splashLangChosen = null;
 
 window.splashChooseLang = function(lang) {
   try {
     window._splashLangChosen = lang;
-    localStorage.setItem("fatlin_lang", lang);
-    var btn = document.getElementById("ls-" + lang);
-    if (btn) btn.classList.add("entering");
-    var ls = document.getElementById("lang-splash");
-    if (ls) ls.style.opacity = "0.4";
+    localStorage.setItem('fatlin_lang', lang);
+    var btn = document.getElementById('ls-' + lang);
+    if (btn) btn.classList.add('entering');
   } catch(e) {}
-  window._tryAdvance();
+  // hideSplash puede no existir aún si el módulo tarda; usamos el fallback
+  setTimeout(function() {
+    if (typeof hideSplash === 'function') {
+      hideSplash();
+    } else {
+      // El módulo aún no cargó — ocultar splash directamente
+      var splash = document.getElementById('splash');
+      if (splash) { splash.style.opacity = '0'; setTimeout(function(){ splash.style.display = 'none'; }, 400); }
+    }
+  }, 160);
 };
 
+// Auto-skip splash si el idioma ya estaba guardado
 (function() {
-  var saved = localStorage.getItem("fatlin_lang");
-  if (saved) window._splashLangChosen = saved;
-  // NO ocultar aqui - esperar a Firebase primero
+  var saved = localStorage.getItem('fatlin_lang');
+  if (saved) {
+    window._splashLangChosen = saved;
+    var splash = document.getElementById('splash');
+    if (splash) { splash.style.opacity = '0'; setTimeout(function(){ splash.style.display = 'none'; }, 400); }
+  }
 })();
 </script>
 
@@ -1296,7 +1320,7 @@ window.setLang = function(lang, btnEl, source='splash'){
   const gameActive = typeof game !== 'undefined' && game && game.user;
   if(prev !== lang){
     clearQuestionCache();
-    if(gameActive) setTimeout(()=>prefetchAhead(game.level - 1, 3), 500);
+    if(gameActive) setTimeout(async()=>{ try{ const u=game.user||auth.currentUser; if(u){ await u.getIdToken(); prefetchAhead(game.level-1,3); } }catch(e){} }, 6000);
   }
   if(source !== 'silent' && gameActive){
     const msg = lang === 'en' ? '🇺🇸 English activated' : '🇪🇸 Español activado';
@@ -1312,7 +1336,10 @@ const auth = getAuth(app);
 const db = getFirestore(app, "fatlindb");
 try { enableIndexedDbPersistence(db); } catch(e) {}
 
-const CLAUDE_ENDPOINT = 'https://api.anthropic.com/v1/messages';
+// ── Proxy seguro via Firebase Cloud Function ─────────────────────
+// La API key de Anthropic NUNCA sale al cliente.
+// El proxy valida el token Firebase antes de llamar a Anthropic.
+const CLAUDE_ENDPOINT = 'https://us-central1-fatlin.cloudfunctions.net/claudeProxy';
 
 const PACIE_SOURCES = [
     "https://www.fatla.org",
@@ -1390,6 +1417,8 @@ async function prefetchLevel(level){
   if(level < 1 || level > TOTAL) return;
   if(getCachedQuestions(level)) return;
   if(_prefetchInProgress.has(level)) return;
+  // No prefetchear si no hay usuario autenticado
+  if(!auth.currentUser) return;
   _prefetchInProgress.add(level);
   try {
     const qs = await generateQuestionsWithClaude(level);
@@ -1417,26 +1446,38 @@ async function generateQuestionsWithClaude(level) {
       ? `Actúa como el Jurado de la Quinta Vergara y experto Master en Metodología PACIE. Evalúas si el usuario merece la Lira de Oro. Fuentes oficiales: ${sourcesStr}. Usa web_search. RESPONDE SOLO EN JSON VÁLIDO sin markdown ni backticks.`
       : `Eres un experto en la metodología PACIE desarrollada por FATLA. Tu única fuente son: ${sourcesStr}. Usa web_search para consultar esas fuentes. RESPONDE ÚNICAMENTE EN JSON VÁLIDO.`;
     const userPrompt = expert
-      ? `Nivel EXPERTO sobre "PACIE aplicado". Genera 6 preguntas de ELITE (3 mc + 3 tf) para nivel ${level}. Tema: ${topic}.
+      ? `Nivel EXPERTO sobre "PACIE aplicado". Genera 9 preguntas de ELITE (5 mc + 4 tf) para nivel ${level}. Tema: ${topic}.
 REGLAS: Crea mini-escenarios reales (2-3 lineas). Prohibido preguntar definiciones basicas. Distractores tecnicamente plausibles pero incorrectos segun PACIE. Tono profesional de premiacion.
 RESPONDE SOLO JSON: {"questions":[{"type":"mc","q":"[Escenario real]","a":"...","o":["...","...","...","..."],"j":"Correcto. [explicacion con fase PACIE especifica]","source":"fatla.org"}]}`
-      : `Busca sobre "${topic}" en las fuentes FATLA/PACIE. Genera 6 preguntas (3 mc + 3 tf) para nivel ${level}.
+      : `Busca sobre "${topic}" en las fuentes FATLA/PACIE. Genera 9 preguntas (5 mc + 4 tf) para nivel ${level}.
 RESPONDE SOLO con: {"questions":[{"type":"mc","q":"...","a":"...","o":["...","...","...","..."],"j":"...","source":"fatla.org"},{"type":"tf","q":"...","a":"Verdadero","o":["Verdadero","Falso"],"j":"...","source":"pacie.education"}]}
 Reglas: en mc "a" debe estar en "o"; en tf "a" es "Verdadero" o "Falso".`;
 
     const isProxy = !CLAUDE_ENDPOINT.includes('anthropic.com');
     const bodyPayload = {
         model: "claude-sonnet-4-20250514",
-        max_tokens: 1000,
+        max_tokens: 2000,
         system: systemPrompt,
         tools: [{ type: "web_search_20250305", name: "web_search" }],
         messages: [{ role: "user", content: userPrompt }]
     };
+    // Obtener token Firebase con reintentos
     let firebaseToken = "";
-    try {
-        const currentUser = auth.currentUser;
-        if (currentUser) firebaseToken = await currentUser.getIdToken();
-    } catch(tokenErr) {}
+    for(let attempt = 0; attempt < 4; attempt++) {
+        try {
+            const currentUser = game.user || auth.currentUser;
+            if (currentUser) {
+                firebaseToken = await currentUser.getIdToken();
+                break;
+            }
+            // Esperar y reintentar
+            await new Promise(r => setTimeout(r, 1500));
+        } catch(tokenErr) {
+            console.warn('[claudeProxy] token attempt', attempt, ':', tokenErr.message);
+            await new Promise(r => setTimeout(r, 1000));
+        }
+    }
+    if (!firebaseToken) throw new Error('No Firebase token tras 4 intentos');
     const fetchOptions = {
         method: "POST",
         headers: { "Content-Type": "application/json", "Authorization": `Bearer ${firebaseToken}` },
@@ -1450,7 +1491,7 @@ Reglas: en mc "a" debe estar en "o"; en tf "a" es "Verdadero" o "Falso".`;
     try { const clean=fullText.replace(/```json|```/g,"").trim(); const m=clean.match(/\{[\s\S]*\}/); if(!m) throw new Error("No JSON"); parsed=JSON.parse(m[0]); } catch(e){ throw new Error("Parse error: "+e.message); }
     if(!parsed.questions||!Array.isArray(parsed.questions)||!parsed.questions.length) throw new Error("Invalid structure");
     const valid=parsed.questions.filter(q=>{if(!q.q||!q.a||!q.o||!Array.isArray(q.o))return false;if(q.type==='mc'&&!q.o.includes(q.a))return false;if(q.type==='tf'&&!['Verdadero','Falso','True','False'].includes(q.a))return false;return true;});
-    if(valid.length<3) throw new Error("Too few valid questions");
+    if(valid.length<4) throw new Error("Too few valid questions");
     return valid;
 }
 
@@ -1474,7 +1515,7 @@ const REWARDS=[
 ];
 let selectedAvatar="🧑",tempAvatar="🧑";
 
-let game={
+let game=window.game={
   user:null, level:1, playingLevel:1, stars:0, lives:5,
   lastDeathTime:null, correctCount:0, targetCorrect:3,
   isProcessing:false, currentQ:null, levelQuestions:[], qIndex:0,
@@ -1492,27 +1533,32 @@ function flashProgressDot(idx){const d=document.getElementById(`cd${idx}`);if(!d
 
 applyLang();
 
-// -- onAuthStateChanged: segunda llave del patron dos-llaves
-// La pantalla destino se muestra ANTES de ocultar el splash.
-// Asi nunca hay pantalla negra intermedia.
+// ── hideSplash expuesto globalmente para que splashChooseLang pueda llamarlo ──
+window.hideSplash = function(){
+  if(window._splashHidden) return;
+  window._splashHidden = true;
+  const s = document.getElementById('splash');
+  s.style.opacity = '0';
+  setTimeout(()=>s.style.display='none', 400);
+};
+
 onAuthStateChanged(auth,async(user)=>{
   if(user){
     game.user=user;
     await loadProgress();
-    document.getElementById("auth-screen").style.display="none";
-    document.getElementById("game-container").style.display="block";
-    renderMap(); updateHUD(); mascotShow(); resetMascotIdleTimer();
-    setTimeout(()=>prefetchAhead(game.level-1,3),1500);
-    setTimeout(()=>{centerCamera(true);if(!("ontouchstart" in window)){const h=document.getElementById("scroll-hint");h.classList.add("visible");setTimeout(()=>h.classList.remove("visible"),4000);}},200);
-    window._firebaseReady=true;
-    window._tryAdvance();
+    console.log('[DEBUG] game.level after load:', game.level, 'playingLevel:', game.playingLevel);
+  window._gameRef = game;
+  initGameUI();
   } else {
-    document.getElementById("auth-screen").style.display="flex";
-    window._firebaseReady=true;
-    window._tryAdvance();
+    window.hideSplash();
+    document.getElementById('auth-screen').style.display='flex';
   }
 });
 
+// Si el idioma ya fue elegido antes de que el módulo cargara, ocultar splash ahora
+if(window._splashLangChosen && !window._splashHidden) {
+  setTimeout(window.hideSplash, 50);
+}
 
 async function loadProgress(){
   let cloudData = null;
@@ -1644,11 +1690,12 @@ function triggerLevel5Blast(level){
 }
 
 function initGameUI(){
+  document.getElementById('hud-avatar').onclick = openAvatarPicker;
   applyLang();
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('game-container').style.display='block';
   renderMap(); updateHUD(); mascotShow(); resetMascotIdleTimer();
-  setTimeout(()=>prefetchAhead(game.level - 1, 3), 1500);
+  setTimeout(async()=>{ try{ const u=game.user||auth.currentUser; if(u){ await u.getIdToken(); prefetchAhead(game.level-1,3); } }catch(e){} }, 6000);
   setTimeout(()=>{centerCamera(true);window.hideSplash();if(!('ontouchstart' in window)){const h=document.getElementById('scroll-hint');h.classList.add('visible');setTimeout(()=>h.classList.remove('visible'),4000);}},200);
 }
 
@@ -1658,12 +1705,17 @@ function checkLivesRegen(){
   if(game.lives<5&&game.lastDeathTime){const e=Date.now()-game.lastDeathTime,f=5*60*1000;if(e>=f){game.lives++;game.lastDeathTime=game.lives<5?(game.lastDeathTime+f):null;saveProgress();updateHUD();}}const ti=document.getElementById('stat-timer');if(game.lives<5&&game.lastDeathTime){ti.style.display='inline';const r=5*60*1000-(Date.now()-game.lastDeathTime);if(r>0){const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);ti.innerText=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}}else ti.style.display='none';}
 setInterval(checkLivesRegen,1000);
 
-const TOTAL=60,SPACING=180;
-function renderMap(){const nc=document.getElementById('nodes-container'),sv=document.getElementById('path-svg');nc.innerHTML='';sv.innerHTML='';const W=document.getElementById('map-scroll').offsetWidth;let d='';for(let i=1;i<=TOTAL;i++){const y=200+(i-1)*SPACING,x=(W/2)+Math.sin(i*.7)*(W*.25);d+=(i===1?'M':'L')+` ${x} ${y}`;const n=document.createElement('div');if(i<game.level){n.className='level-node completed';n.innerHTML=`<span class="lnlabel">${i}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>`;if(i%10===0)n.innerHTML+=`<span style="position:absolute;top:-10px;right:-8px;font-size:13px">🏅</span>`;}else if(i===game.level){n.className='level-node current';n.innerHTML=`<span class="lnlabel">Nv.${i}</span>⭐`;}else{n.className='level-node locked';n.innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" opacity=".4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;}n.style.left=`${x-32}px`;n.style.top=`${y-32}px`;const ci=i;n.onclick=()=>{if(ci<=game.level&&!game.isProcessing){game.playingLevel=ci;startChallenge();}};nc.appendChild(n);}const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.setAttribute("d",d);p.setAttribute("stroke","rgba(255,255,255,0.1)");p.setAttribute("stroke-width","8");p.setAttribute("stroke-linecap","round");p.setAttribute("fill","none");sv.appendChild(p);}
+const TOTAL=9999,SPACING=180;
+function renderMap(){const nc=document.getElementById('nodes-container'),sv=document.getElementById('path-svg');nc.innerHTML='';sv.innerHTML='';const W=document.getElementById('map-scroll').offsetWidth;let d='';const visibleMax = game.level + 5; for(let i=1;i<=visibleMax;i++){const y=200+(i-1)*SPACING,x=(W/2)+Math.sin(i*.7)*(W*.25);d+=(i===1?'M':'L')+` ${x} ${y}`;const n=document.createElement('div');if(i<game.level){n.className='level-node completed';n.innerHTML=`<span class="lnlabel">${i}</span><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="3"><polyline points="20,6 9,17 4,12"/></svg>`;if(i%10===0)n.innerHTML+=`<span style="position:absolute;top:-10px;right:-8px;font-size:13px">🏅</span>`;}else if(i===game.level){n.className='level-node current';n.innerHTML=`<span class="lnlabel">Nv.${i}</span>⭐`;}else{n.className='level-node locked';n.innerHTML=`<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2.5" opacity=".4"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>`;}n.style.left=`${x-32}px`;n.style.top=`${y-32}px`;const ci=i;n.onclick=()=>{if(ci<=game.level&&!game.isProcessing){game.playingLevel=ci;startChallenge();}};nc.appendChild(n);}const p=document.createElementNS("http://www.w3.org/2000/svg","path");p.setAttribute("d",d);p.setAttribute("stroke","rgba(255,255,255,0.1)");p.setAttribute("stroke-width","8");p.setAttribute("stroke-linecap","round");p.setAttribute("fill","none");sv.appendChild(p);
+  // Altura dinamica segun niveles visibles
+  const totalH = 200 + (visibleMax - 1) * SPACING + 200;
+  nc.style.height = totalH + 'px';
+  sv.setAttribute('height', totalH);
+}
 
 async function startChallenge(){
   if(game.lives<=0){showError(t("no_lives"));return;}
-  game.correctCount=0; updateProgressUI(); game.isProcessing=true;
+  game.correctCount=0; game._seenQs=new Set(); updateProgressUI(); game.isProcessing=true;
   const badge=document.getElementById('replay-badge'),num=document.getElementById('replay-num'),lbl=document.getElementById('clabel');
   if(game.playingLevel<game.level){ badge.style.display='block'; num.innerText=game.playingLevel; lbl.style.display='none'; }
   else { badge.style.display='none'; lbl.style.display='block'; }
@@ -1710,11 +1762,45 @@ async function startChallenge(){
   }
 }
 
-function showNextQuestion(){if(game.qIndex>=game.levelQuestions.length){game.levelQuestions=[...game.levelQuestions].sort(()=>Math.random()-.5);game.qIndex=0;}game.currentQ=game.levelQuestions[game.qIndex++];const area=document.getElementById('question-area');area.style.opacity='0';area.style.transform='translateY(8px)';requestAnimationFrame(()=>{document.getElementById('txt-q').innerText=game.currentQ.q;document.getElementById('source-badge').innerText=game.currentQ.source?`📚 Fuente: ${game.currentQ.source}`:'';const tb=document.getElementById('q-type-badge');tb.style.display=game.currentQ.type==='tf'?'block':'none';renderOptions();area.style.transition='opacity .25s ease, transform .25s ease';area.style.opacity='1';area.style.transform='translateY(0)';updateProgressUI();});}
+function showNextQuestion(){
+  // ── Anti-repetición ─────────────────────────────────────────
+  // Usamos un Set con el texto de cada pregunta para evitar
+  // mostrar la misma dentro del mismo intento de nivel.
+  if(!game._seenQs) game._seenQs = new Set();
+
+  // Si ya se mostraron TODAS las preguntas disponibles,
+  // limpiamos el historial (nueva vuelta) y pedimos más al API
+  if(game._seenQs.size >= game.levelQuestions.length){
+    game._seenQs.clear();
+    // Solicitar banco adicional en segundo plano si el pool es pequeño
+    if(game.levelQuestions.length < 10){
+      generateQuestionsWithClaude(game.playingLevel).then(fresh=>{
+        if(fresh && fresh.length >= 3){
+          // Fusionar sin duplicar por texto de pregunta
+          const existing = new Set(game.levelQuestions.map(q=>q.q));
+          const newOnes  = fresh.filter(q=>!existing.has(q.q));
+          if(newOnes.length > 0){
+            game.levelQuestions = [...game.levelQuestions, ...newOnes];
+            setCachedQuestions(game.playingLevel, game.levelQuestions);
+          }
+        }
+      }).catch(()=>{});
+    }
+  }
+
+  // Elegir pregunta no vista aún en esta ronda
+  const unseen = game.levelQuestions.filter(q=>!game._seenQs.has(q.q));
+  const pool   = unseen.length > 0 ? unseen : game.levelQuestions;
+  const pick   = Math.floor(Math.random() * pool.length);
+  game.currentQ = pool[pick];
+  game._seenQs.add(game.currentQ.q);
+  game.qIndex++;const area=document.getElementById('question-area');area.style.opacity='0';area.style.transform='translateY(8px)';requestAnimationFrame(()=>{document.getElementById('txt-q').innerText=game.currentQ.q;document.getElementById('source-badge').innerText=game.currentQ.source?`📚 Fuente: ${game.currentQ.source}`:'';const tb=document.getElementById('q-type-badge');tb.style.display=game.currentQ.type==='tf'?'block':'none';renderOptions();area.style.transition='opacity .25s ease, transform .25s ease';area.style.opacity='1';area.style.transform='translateY(0)';updateProgressUI();});}
 
 function renderOptions(){const c=document.getElementById('opts-container');c.innerHTML='';const isTF=game.currentQ.type==='tf';const opts=isTF?[...game.currentQ.o]:[...game.currentQ.o].sort(()=>Math.random()-.5);opts.forEach((opt,idx)=>{const b=document.createElement('button');b.className=`opt${isTF?' vf':''}`;b.style.animationDelay=`${idx*60}ms`;b.textContent=isTF?(opt==='Verdadero'?t('tf_true'):t('tf_false')):opt;b.onclick=()=>{if(game.isProcessing)return;opt===game.currentQ.a?handleCorrect(b):handleWrong(b);};c.appendChild(b);});}
 
-function handleCorrect(btn){btn.classList.add('correct','cglow');game.correctCount++;game.stars+=15;game.isProcessing=true;playClick(true);document.querySelectorAll('.opt').forEach(b=>b.disabled=true);flashProgressDot(game.correctCount-1);updateHUD();updateProgressUI();mascotSetState('cheer',800);resetMascotIdleTimer();if(game.correctCount>=game.targetCorrect){const wasNew=(game.playingLevel===game.level);if(wasNew){game.level++;playBell();const av=document.getElementById('hud-avatar');av.classList.remove('av-lvl');void av.offsetWidth;av.classList.add('av-lvl');setTimeout(()=>av.classList.remove('av-lvl'),1000);}saveProgress();checkMilestones(game.level);const milestone=Math.floor((game.level-1)/10)*10;const reward=wasNew&&milestone>0&&milestone!==game.lastRewardAt&&(game.level-1)%10===0;setTimeout(()=>{document.getElementById('modal-challenge').classList.remove('active');game.playingLevel=game.level;game.correctCount=0;updateProgressUI();renderMap();centerCamera();game.isProcessing=false;if(reward){game.lastRewardAt=milestone;game.badges++;saveProgress();setTimeout(()=>showReward(milestone),400);}prefetchAhead(game.level, 2);},900);}else{setTimeout(()=>{game.isProcessing=false;showNextQuestion();},600);}}
+function handleCorrect(btn){btn.classList.add('correct','cglow');game.correctCount++;game.stars+=15;game.isProcessing=true;playClick(true);document.querySelectorAll('.opt').forEach(b=>b.disabled=true);flashProgressDot(game.correctCount-1);updateHUD();updateProgressUI();mascotSetState('cheer',800);resetMascotIdleTimer();if(game.correctCount>=game.targetCorrect){const wasNew=(game.playingLevel===game.level);if(wasNew){
+  game.level++;
+    playBell();const av=document.getElementById('hud-avatar');av.classList.remove('av-lvl');void av.offsetWidth;av.classList.add('av-lvl');setTimeout(()=>av.classList.remove('av-lvl'),1000);}saveProgress();checkMilestones(game.level);const milestone=Math.floor((game.level-1)/10)*10;const reward=wasNew&&milestone>0&&milestone!==game.lastRewardAt&&(game.level-1)%10===0;setTimeout(()=>{document.getElementById('modal-challenge').classList.remove('active');game.playingLevel=game.level;game.correctCount=0;updateProgressUI();renderMap();centerCamera();game.isProcessing=false;if(reward){game.lastRewardAt=milestone;game.badges++;saveProgress();setTimeout(()=>showReward(milestone),400);}prefetchAhead(game.level, 2);},900);}else{setTimeout(()=>{game.isProcessing=false;showNextQuestion();},600);}}
 
 function handleWrong(btn){
   btn.classList.add('wrong');game.isProcessing=true;
@@ -1757,8 +1843,61 @@ document.getElementById('btn-logout').onclick=async()=>{if(confirm(t("confirm_lo
 document.getElementById('btn-switch-acc').onclick=async()=>{if(confirm(t("confirm_switch"))){try{await signOut(auth);}catch(e){}game.user=null;showAuthUI();}};
 document.getElementById('btn-new-acc').onclick=()=>{try{signOut(auth).catch(()=>{});}catch(e){}game.user=null;showAuthUI('email');};
 
-function openAvatarPicker(){const g=document.getElementById('av-grid');g.innerHTML='';tempAvatar=selectedAvatar;AVATARS.forEach(av=>{const b=document.createElement('div');b.className=`avopt${av===selectedAvatar?' selected':''}`;b.innerText=av;b.onclick=()=>{document.querySelectorAll('.avopt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');tempAvatar=av;};g.appendChild(b);});document.getElementById('modal-avatar').classList.add('active');}
-document.getElementById('hud-avatar').onclick=openAvatarPicker;
+window.openLogros = function openLogros(){
+  console.log('[Logros] game:', game?.level, 'badges:', game?.badges, 'diplomas:', game?.diplomasEarned);
+  // Datos del usuario
+  document.getElementById('logros-avatar').textContent = selectedAvatar || '🧑';
+  document.getElementById('logros-name').textContent = game.user?.displayName || game.user?.email?.split('@')[0] || 'Usuario';
+  document.getElementById('logros-level').textContent = 'Nivel ' + game.level + ' · ' + game.stars + ' ⭐';
+
+  // Insignias — basadas en REWARDS (cada 10 niveles)
+  const badgesGrid = document.getElementById('logros-badges-grid');
+  badgesGrid.innerHTML = '';
+  const earnedCount = game.badges || 0;
+  REWARDS.forEach((r, idx) => {
+    const earned = idx < earnedCount;
+    const div = document.createElement('div');
+    div.className = 'logro-item ' + (earned ? 'earned' : 'locked');
+    div.innerHTML = `<span class="logro-emoji">${r.badge.split(' ')[0]}</span>
+      <span class="logro-label">${r.badge.replace(/^[^ ]+ /,'')}</span>
+      <span style="font-size:.65rem;color:#6b7280;display:block;margin-top:3px">${r.msg}</span>`;
+    badgesGrid.appendChild(div);
+  });
+  if(earnedCount === 0){
+    badgesGrid.innerHTML = '<div class="no-logros" style="grid-column:span 2">Aún no tienes insignias.<br>¡Completa 10 niveles para ganar la primera!</div>';
+  }
+
+  // Diplomas
+  const diplomasList = document.getElementById('logros-diplomas-list');
+  diplomasList.innerHTML = '';
+  const diplomasCount = game.diplomasEarned || 0;
+  if(diplomasCount > 0){
+    // Diplomas cada 20 niveles
+    const diplomaTiers = [
+      {min:20, emoji:'📜', title:'Diploma Fundamentos PACIE', sub:'Completaste 20 niveles'},
+      {min:40, emoji:'🎓', title:'Diploma Practicante PACIE', sub:'Completaste 40 niveles'},
+      {min:60, emoji:'🏛️', title:'Diploma Experto PACIE', sub:'Completaste 60 niveles'},
+      {min:80, emoji:'👑', title:'Diploma Máster PACIE', sub:'Completaste 80 niveles'},
+    ];
+    diplomaTiers.filter(d => game.level > d.min).forEach(d => {
+      const div = document.createElement('div');
+      div.className = 'diploma-item';
+      div.innerHTML = `<span class="diploma-emoji">${d.emoji}</span>
+        <div class="diploma-info">
+          <div class="diploma-title">${d.title}</div>
+          <div class="diploma-sub">${d.sub}</div>
+        </div>
+        <span style="color:#059669;font-size:1.2rem">✅</span>`;
+      diplomasList.appendChild(div);
+    });
+  } else {
+    diplomasList.innerHTML = '<div class="no-logros">Aún no tienes diplomas.<br>¡Llega al nivel 20 para obtener el primero!</div>';
+  }
+
+  document.getElementById('modal-logros').classList.add('active');
+}
+
+window.openAvatarPicker = function openAvatarPicker(){const g=document.getElementById('av-grid');g.innerHTML='';tempAvatar=selectedAvatar;AVATARS.forEach(av=>{const b=document.createElement('div');b.className=`avopt${av===selectedAvatar?' selected':''}`;b.innerText=av;b.onclick=()=>{document.querySelectorAll('.avopt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');tempAvatar=av;};g.appendChild(b);});document.getElementById('modal-avatar').classList.add('active');}
 document.getElementById('btn-confirm-av').onclick=()=>{selectedAvatar=tempAvatar;document.getElementById('hud-avatar').innerText=selectedAvatar;document.getElementById('modal-avatar').classList.remove('active');saveProgress();updateHUD();};
 
 function updateHUD(){
@@ -1867,7 +2006,25 @@ document.getElementById('btn-dip-close').onclick = () => document.getElementById
 document.getElementById('btn-dip-print').onclick = () => {
   const el = document.getElementById('diploma-content');
   const w = window.open('','_blank','width=600,height=700');
-  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Diploma Fatlin AI</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></head><body style="font-family:Inter,sans-serif;background:#fffbeb;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">${el.outerHTML}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script></body></html>`);
+  w.document.write(`<!DOCTYPE html><html><head><meta charset="UTF-8"><title>Diploma Fatlin AI</title><link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet"></head><body style="font-family:Inter,sans-serif;background:#fffbeb;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px">${el.outerHTML}<script>window.onload=()=>setTimeout(()=>window.print(),500)<\/script>    </div>
+    <div class="logros-user">
+      <div class="logros-avatar" id="logros-avatar">🧑</div>
+      <div class="logros-info">
+        <div class="logros-name" id="logros-name">Usuario</div>
+        <div class="logros-level" id="logros-level">Nivel 1 · 0 ⭐</div>
+      </div>
+    </div>
+    <div class="logros-section">
+      <div class="logros-section-title">🎖️ Insignias</div>
+      <div class="logros-grid" id="logros-badges-grid"></div>
+    </div>
+    <div class="logros-section">
+      <div class="logros-section-title">📜 Diplomas</div>
+      <div id="logros-diplomas-list"></div>
+    </div>
+  </div>
+</div>
+</body></html>`);
   w.document.close();
 };
 
@@ -1914,5 +2071,32 @@ function isExpertLevel(level){ return level >= 40 && level <= 50; }
 
 window.onresize=()=>{if(game.user){renderMap();centerCamera();}};
 </script>
+<!-- ── MODAL LOGROS ──────────────────────────────── -->
+<div id="modal-logros">
+  <div class="logros-card">
+    <div class="logros-header">
+      <span class="logros-title">🏅 Mis Logros</span>
+      <div style="display:flex;gap:8px;align-items:center">
+        <button onclick="document.getElementById('modal-logros').classList.remove('active');openAvatarPicker()" style="background:#f0f9ff;border:1px solid #bae6fd;border-radius:8px;padding:4px 8px;font-size:.75rem;color:#0369a1;cursor:pointer">🧑 Avatar</button>
+        <button onclick="document.getElementById('modal-logros').classList.remove('active')" style="background:none;border:none;font-size:1.4rem;cursor:pointer;color:#64748b">✕</button>
+      </div>
+    </div>
+    <div class="logros-user">
+      <div class="logros-avatar" id="logros-avatar">🧑</div>
+      <div class="logros-info">
+        <div class="logros-name" id="logros-name">Usuario</div>
+        <div class="logros-level" id="logros-level">Nivel 1 · 0 ⭐</div>
+      </div>
+    </div>
+    <div class="logros-section">
+      <div class="logros-section-title">🎖️ Insignias</div>
+      <div class="logros-grid" id="logros-badges-grid"></div>
+    </div>
+    <div class="logros-section">
+      <div class="logros-section-title">📜 Diplomas</div>
+      <div id="logros-diplomas-list"></div>
+    </div>
+  </div>
+</div>
 </body>
 </html>
