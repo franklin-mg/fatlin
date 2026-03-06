@@ -1293,26 +1293,16 @@ window.splashChooseLang = function(lang) {
     var btn = document.getElementById('ls-' + lang);
     if (btn) btn.classList.add('entering');
   } catch(e) {}
-  // hideSplash puede no existir aún si el módulo tarda; usamos el fallback
-  setTimeout(function() {
-    if (typeof hideSplash === 'function') {
-      hideSplash();
-    } else {
-      // El módulo aún no cargó — ocultar splash directamente
-      var splash = document.getElementById('splash');
-      if (splash) { splash.style.opacity = '0'; setTimeout(function(){ splash.style.display = 'none'; }, 400); }
-    }
-  }, 160);
+  // Mostrar spinner — NO ocultar splash hasta que Firebase responda
+  var ls = document.getElementById('lang-splash');
+  if(ls){ ls.innerHTML = '<div style="color:rgba(186,230,253,.7);font-size:.85rem;margin-top:1rem;text-align:center"><div style="font-size:2rem;animation:spin 1s linear infinite;display:inline-block">⏳</div><br>Conectando...</div>'; }
 };
 
 // Auto-skip splash si el idioma ya estaba guardado
+// Solo marcamos el flag — el splash lo oculta onAuthStateChanged
 (function() {
   var saved = localStorage.getItem('fatlin_lang');
-  if (saved) {
-    window._splashLangChosen = saved;
-    var splash = document.getElementById('splash');
-    if (splash) { splash.style.opacity = '0'; setTimeout(function(){ splash.style.display = 'none'; }, 400); }
-  }
+  if (saved) { window._splashLangChosen = saved; }
 })();
 </script>
 
@@ -1395,7 +1385,7 @@ const LANG = {
     gala_24_desc:    'Vidas infinitas + fondo estelar',
     gala_72_name:    'Modo Gala 72h',
     gala_72_desc:    '¡El mejor valor!',
-    no_lives:        'No tienes vidas. Espera 3 horas por vida.',
+    no_lives:        'No tienes vidas. Espera 10 min por vida.',
     no_stars_need:   'Necesitas {N} ⭐ (tienes {M})',
     shield_bought:   '🛡️ {N} escudo{S} comprado{S}. Total: {T}',
     gala_activated:  '✨ ¡Modo Gala activado por {N}h! Vidas infinitas 🚀',
@@ -1490,7 +1480,7 @@ const LANG = {
     gala_24_desc:    'Infinite lives + starry background',
     gala_72_name:    'Gala Mode 72h',
     gala_72_desc:    'Best value!',
-    no_lives:        'No lives left. Wait 3 hours per life.',
+    no_lives:        'No lives left. Wait 10 min per life.',
     no_stars_need:   'You need {N} ⭐ (you have {M})',
     shield_bought:   '🛡️ {N} shield{S} purchased. Total: {T}',
     gala_activated:  '✨ Gala Mode activated for {N}h! Infinite lives 🚀',
@@ -1906,33 +1896,34 @@ function dbg(msg){
 }
 
 onAuthStateChanged(auth, async(user) => {
-  dbg('Firebase respondió. Usuario: ' + (user ? user.email||user.uid : 'ninguno'));
+  dbg('Firebase OK · ' + (user ? (user.email||user.uid) : 'sin sesión'));
 
-  // Ocultar splash siempre
+  // Ocultar splash con fade suave
   const splash = document.getElementById('splash');
-  if(splash){ splash.style.opacity='0'; setTimeout(()=>{ splash.style.display='none'; }, 350); }
+  if(splash){
+    splash.style.transition = 'opacity .4s ease';
+    splash.style.opacity = '0';
+    setTimeout(()=>{ splash.style.display='none'; }, 420);
+  }
   window._splashHidden = true;
 
   if(user){
-    dbg('Cargando progreso...');
     game.user = user;
     try{ await loadProgress(); }catch(e){ dbg('loadProgress error: '+e.message); }
     window._gameRef = game;
-    dbg('Iniciando UI del juego...');
     initGameUI();
     setTimeout(()=>{ const b=document.getElementById('debug-bar'); if(b) b.style.display='none'; }, 2000);
   } else {
-    dbg('Sin sesión — mostrando pantalla de login');
-    const as = document.getElementById('auth-screen');
-    as.style.display = 'flex';
-    setTimeout(()=>{ const b=document.getElementById('debug-bar'); if(b) b.style.display='none'; }, 3000);
+    // Sin sesión: mostrar pantalla de login
+    setTimeout(()=>{
+      const as = document.getElementById('auth-screen');
+      if(as) as.style.display = 'flex';
+      setTimeout(()=>{ const b=document.getElementById('debug-bar'); if(b) b.style.display='none'; }, 3000);
+    }, 450); // esperar a que el splash termine de desaparecer
   }
 });
 
-// Si el idioma ya fue elegido antes de que el módulo cargara, ocultar splash ahora
-if(window._splashLangChosen && !window._splashHidden) {
-  setTimeout(window.hideSplash, 50);
-}
+// Splash controlado exclusivamente por onAuthStateChanged
 
 async function loadProgress(){
   let cloudData = null;
@@ -2091,7 +2082,7 @@ function checkLivesRegen(){
   const isGala = game.infiniteLivesUntil && game.infiniteLivesUntil > Date.now();
   if(isGala){ document.getElementById('stat-timer').style.display='none'; updateHUD(); return; }
   if(game.lives<5&&game.lastDeathTime){
-    const REGEN_MS = 10*60*60*1000; // 3 horas por vida
+    const REGEN_MS = 10*60*1000; // 10 minutos por vida
     const elapsed = Date.now()-game.lastDeathTime;
     const livesRegened = Math.floor(elapsed / REGEN_MS);
     if(livesRegened > 0){
@@ -2108,7 +2099,7 @@ function checkLivesRegen(){
   }
   const ti=document.getElementById('stat-timer');
   if(game.lives<5&&game.lastDeathTime){
-    const REGEN_MS = 10*60*60*1000;
+    const REGEN_MS = 10*60*1000;
     ti.style.display='inline';
     const r = REGEN_MS - (Date.now()-game.lastDeathTime);
     if(r>0){const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);ti.innerText=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
