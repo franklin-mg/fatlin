@@ -295,7 +295,42 @@
             background: rgba(15,10,30,.97);
             border-bottom: 2px solid var(--gala-gold);
         }
-        body.gala-mode .hud-inner * { color: var(--gala-gold-light) !important; }
+        body./* Gala: textos numéricos y labels en dorado suave */
+        body.gala-mode .hud-inner #stat-lives,
+        body.gala-mode .hud-inner #stat-stars,
+        body.gala-mode .hud-inner #stat-level,
+        body.gala-mode .hud-inner #stat-user,
+        body.gala-mode .hud-inner #stat-shields-count,
+        body.gala-mode .hud-inner #stat-streak-count,
+        body.gala-mode .hud-inner #stat-timer { color: var(--gala-gold-light) !important; }
+
+        /* Gala: iconos SVG en los botones — trazo visible sobre fondo oscuro */
+        body.gala-mode .hud-inner .hbtn { background: rgba(245,158,11,.15) !important; }
+        body.gala-mode .hud-inner #btn-logros  { background: rgba(245,158,11,.18) !important; color: #fde68a !important; }
+        body.gala-mode .hud-inner #btn-ranking { background: rgba(245,158,11,.18) !important; color: #fde68a !important; }
+        body.gala-mode .hud-inner #btn-gocur   { background: rgba(168,85,247,.25) !important; color: #e9d5ff !important; }
+        body.gala-mode .hud-inner #btn-shop    { background: rgba(245,158,11,.2)  !important; color: #fbbf24 !important; }
+        body.gala-mode .hud-inner #btn-account { background: rgba(168,85,247,.2)  !important; }
+        body.gala-mode .hud-inner #btn-account svg { stroke: #c4b5fd !important; }
+        body.gala-mode .hud-inner #btn-ranking svg { stroke: #fde68a !important; }
+        body.gala-mode .hud-inner #btn-gocur   svg { stroke: #e9d5ff !important; }
+
+        /* Gala: selector de idioma */
+        body.gala-mode .hud-inner .hud-lang-opt { color: rgba(253,230,138,.5) !important; }
+        body.gala-mode .hud-inner .hud-lang-opt.active {
+            background: rgba(245,158,11,.3) !important;
+            color: #fde68a !important;
+            box-shadow: 0 0 8px rgba(245,158,11,.4) !important;
+        }
+
+        /* Gala: divisores */
+        body.gala-mode .hud-inner .hdiv { background: rgba(245,158,11,.25) !important; }
+
+        /* Gala: avatar */
+        body.gala-mode #hud-avatar {
+            text-shadow: 0 0 12px rgba(245,158,11,.8);
+            filter: drop-shadow(0 0 6px rgba(245,158,11,.6));
+        }
         body.gala-mode #stat-lives::before { content: '∞ '; color: var(--gala-gold) !important; }
         body.gala-mode .level-node.current {
             background: linear-gradient(135deg, var(--gala-gold), #d97706) !important;
@@ -684,6 +719,255 @@
         /* ── SPINNER SPLASH ──────────────────────────────────── */
         @keyframes splashSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
 
+        
+        /* ── LÍNEA DE ASCENSO NEÓN ──────────────────────────── */
+        .rank-ascenso-line {
+            position: relative;
+            margin: 6px 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            pointer-events: none;
+        }
+        .rank-ascenso-line::before {
+            content: '';
+            flex: 1;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #10b981, #34d399, #10b981, transparent);
+            box-shadow: 0 0 8px #10b981, 0 0 16px rgba(16,185,129,.4);
+            animation: neonPulse 2s ease-in-out infinite;
+        }
+        .rank-ascenso-badge {
+            font-size: .58rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: .12em;
+            color: #10b981;
+            background: rgba(16,185,129,.12);
+            border: 1px solid rgba(16,185,129,.5);
+            border-radius: 20px;
+            padding: 3px 9px;
+            white-space: nowrap;
+            box-shadow: 0 0 10px rgba(16,185,129,.3);
+            animation: neonPulse 2s ease-in-out infinite;
+        }
+        @keyframes neonPulse {
+            0%,100% { opacity: 1; box-shadow: 0 0 8px #10b981, 0 0 16px rgba(16,185,129,.4); }
+            50%      { opacity: .65; box-shadow: 0 0 4px #10b981, 0 0 8px rgba(16,185,129,.2); }
+        }
+        /* Línea naranja cuando el usuario está en zona de peligro (justo bajo la línea) */
+        .rank-ascenso-line.danger::before {
+            background: linear-gradient(90deg, transparent, #f97316, #fb923c, #f97316, transparent);
+            box-shadow: 0 0 8px #f97316, 0 0 16px rgba(249,115,22,.4);
+        }
+        .rank-ascenso-line.danger .rank-ascenso-badge {
+            color: #f97316;
+            background: rgba(249,115,22,.12);
+            border-color: rgba(249,115,22,.5);
+            box-shadow: 0 0 10px rgba(249,115,22,.3);
+        }
+        /* Mensaje de proximidad */
+        .rank-proximity-msg {
+            font-size: .7rem;
+            font-weight: 700;
+            color: #f97316;
+            background: rgba(249,115,22,.08);
+            border: 1px solid rgba(249,115,22,.25);
+            border-radius: .6rem;
+            padding: 6px 10px;
+            margin: 4px 0 6px;
+            text-align: center;
+            line-height: 1.45;
+        }
+        /* Items sobre la línea — brillo azul */
+        .ritem.above-line {
+            background: rgba(14,165,233,.06);
+            border-left: 3px solid #0ea5e9;
+        }
+        .ritem.above-line .rbar-fill {
+            background: linear-gradient(90deg, #0ea5e9, #6366f1) !important;
+        }
+        /* Items bajo la línea — atenuados */
+        .ritem.below-line {
+            opacity: .7;
+            filter: saturate(.6);
+        }
+        .ritem.below-line.me {
+            opacity: 1 !important;
+            filter: none !important;
+            border-left: 3px solid #f97316;
+            background: rgba(249,115,22,.06);
+        }
+        /* ── MOMENTO DE CRUCE ───────────────────────────────── */
+        #cruce-overlay {
+            position: fixed; inset: 0;
+            z-index: 8000;
+            pointer-events: none;
+            display: none;
+        }
+        #cruce-overlay.active { display: block; }
+        .cruce-line-flash {
+            position: absolute;
+            top: 50%; left: 0; right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, transparent, #10b981, #34d399, #10b981, transparent);
+            box-shadow: 0 0 30px #10b981, 0 0 60px rgba(16,185,129,.8);
+            transform: scaleX(0);
+            animation: cruceFlash 1.2s ease forwards;
+        }
+        @keyframes cruceFlash {
+            0%   { transform: scaleX(0); opacity: 0; }
+            30%  { transform: scaleX(1); opacity: 1; }
+            70%  { transform: scaleX(1); opacity: 1; }
+            100% { transform: scaleX(0); opacity: 0; top: 40%; }
+        }
+        .cruce-msg {
+            position: absolute;
+            top: 42%; left: 50%; transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #064e3b, #065f46);
+            border: 2px solid #10b981;
+            border-radius: 1.25rem;
+            padding: 1rem 1.5rem;
+            text-align: center;
+            box-shadow: 0 0 40px rgba(16,185,129,.5);
+            animation: cruceMsgAnim 2.5s ease forwards;
+            max-width: 300px; width: 85%;
+        }
+        @keyframes cruceMsgAnim {
+            0%   { opacity: 0; transform: translate(-50%,-50%) scale(.8); }
+            20%  { opacity: 1; transform: translate(-50%,-50%) scale(1.05); }
+            70%  { opacity: 1; transform: translate(-50%,-50%) scale(1); }
+            100% { opacity: 0; transform: translate(-50%,-50%) scale(.95); }
+        }
+        .cruce-icon  { font-size: 2.2rem; display: block; margin-bottom: .4rem; }
+        .cruce-title { font-size: 1rem; font-weight: 900; color: #34d399; margin-bottom: .3rem; }
+        .cruce-sub   { font-size: .75rem; color: rgba(167,243,208,.8); line-height: 1.5; }
+
+        
+        /* ── MODAL POLÍTICA DE PRIVACIDAD ───────────────────── */
+        #modal-privacy {
+            position:fixed;inset:0;background:rgba(2,8,20,.97);
+            backdrop-filter:blur(20px);z-index:8500;
+            display:none;align-items:center;justify-content:center;padding:16px;
+        }
+        #modal-privacy.active { display:flex;animation:fadeIn .35s ease; }
+        .privacy-card {
+            background:linear-gradient(160deg,#0c1a2e,#0f2744);
+            border-radius:1.75rem;max-width:420px;width:100%;max-height:90vh;
+            display:flex;flex-direction:column;
+            border:1px solid rgba(99,179,237,.2);
+            box-shadow:0 30px 80px rgba(0,0,0,.7);overflow:hidden;
+        }
+        .privacy-header {
+            padding:1.4rem 1.5rem .9rem;
+            border-bottom:1px solid rgba(255,255,255,.07);
+            flex-shrink:0;text-align:center;
+        }
+        .privacy-logo { display:flex;align-items:center;justify-content:center;gap:.6rem;margin-bottom:.5rem; }
+        .privacy-logo-text { font-size:1.1rem;font-weight:900;color:#e2e8f0;letter-spacing:.02em; }
+        .privacy-title { font-size:.95rem;font-weight:800;color:#63b3ed;margin-bottom:.2rem; }
+        .privacy-date  { font-size:.63rem;color:rgba(186,230,253,.4);font-style:italic; }
+        .privacy-body {
+            flex:1;overflow-y:auto;padding:1.1rem 1.4rem;
+            font-size:.78rem;color:rgba(226,232,240,.82);line-height:1.68;
+            scrollbar-width:thin;scrollbar-color:rgba(99,179,237,.3) transparent;
+        }
+        .privacy-body::-webkit-scrollbar{width:4px}
+        .privacy-body::-webkit-scrollbar-thumb{background:rgba(99,179,237,.3);border-radius:4px}
+        .privacy-body p { margin-bottom:.65rem; }
+        .privacy-body h3 {
+            font-size:.79rem;font-weight:800;color:#63b3ed;
+            margin:1rem 0 .35rem;text-transform:uppercase;letter-spacing:.08em;
+            display:flex;align-items:center;gap:.4rem;
+        }
+        .privacy-body h3:first-child { margin-top:0; }
+        .privacy-body h3::before {
+            content:'';display:inline-block;width:3px;height:12px;
+            background:#0ea5e9;border-radius:2px;flex-shrink:0;
+        }
+        .privacy-body ul  { padding-left:1.1rem;margin-bottom:.65rem; }
+        .privacy-body li  { margin-bottom:.35rem; }
+        .privacy-body strong { color:#93c5fd;font-weight:700; }
+        .privacy-body em     { color:rgba(186,230,253,.6); }
+        .privacy-scroll-hint {
+            font-size:.67rem;color:rgba(251,191,36,.75);text-align:center;
+            padding:.45rem .75rem;background:rgba(251,191,36,.06);
+            border-top:1px solid rgba(251,191,36,.12);flex-shrink:0;
+            animation:neonPulse 2s ease-in-out infinite;
+        }
+        .privacy-footer {
+            padding:.9rem 1.4rem 1.1rem;
+            border-top:1px solid rgba(255,255,255,.07);
+            flex-shrink:0;background:rgba(0,0,0,.15);
+        }
+        .privacy-check-row {
+            display:flex;align-items:flex-start;gap:.7rem;margin-bottom:.75rem;
+            background:rgba(14,165,233,.07);border:1px solid rgba(14,165,233,.18);
+            border-radius:.85rem;padding:.7rem .85rem;cursor:pointer;
+            transition:background .15s,border-color .15s;
+        }
+        .privacy-check-row:hover { background:rgba(14,165,233,.12);border-color:rgba(14,165,233,.35); }
+        .privacy-check-row.checked { background:rgba(14,165,233,.15);border-color:rgba(14,165,233,.5); }
+        .privacy-check-row input[type="checkbox"] {
+            width:18px;height:18px;flex-shrink:0;accent-color:#0ea5e9;cursor:pointer;margin-top:1px;
+        }
+        .privacy-check-label { font-size:.74rem;color:rgba(226,232,240,.85);line-height:1.5;cursor:pointer;user-select:none; }
+        .privacy-check-label strong { color:#63b3ed; }
+        .privacy-accept-btn {
+            width:100%;padding:12px;border-radius:1rem;border:none;cursor:pointer;
+            font-family:inherit;font-weight:900;font-size:.9rem;
+            background:linear-gradient(135deg,#0ea5e9,#6366f1);color:white;
+            box-shadow:0 4px 20px rgba(14,165,233,.4);
+            transition:opacity .2s,transform .15s,box-shadow .15s;margin-bottom:.5rem;
+        }
+        .privacy-accept-btn:disabled { opacity:.3;cursor:not-allowed;box-shadow:none;background:#334155; }
+        .privacy-accept-btn:not(:disabled):hover { transform:translateY(-2px);box-shadow:0 8px 28px rgba(14,165,233,.55); }
+        .privacy-decline-link {
+            display:block;text-align:center;font-size:.66rem;
+            color:rgba(255,255,255,.22);cursor:pointer;text-decoration:underline;
+            transition:color .15s;
+        }
+        .privacy-decline-link:hover { color:rgba(255,255,255,.45); }
+
+        
+        /* ── AVATAR CON FOTO GOOGLE ─────────────────────────── */
+        #hud-avatar img,
+        .logros-avatar img,
+        .acc-av-img,
+        .rank-avatar-img {
+            width:100%; height:100%;
+            object-fit:cover; border-radius:50%;
+            display:block;
+        }
+        #hud-avatar.has-photo { font-size:0; padding:0; overflow:hidden; }
+        .logros-avatar.has-photo { font-size:0; padding:0; overflow:hidden; }
+        .acc-av-wrap.has-photo  { font-size:0; overflow:hidden; }
+        /* Indicador de foto Google en el picker */
+        .av-google-opt {
+            grid-column: span 2;
+            display:flex; align-items:center; gap:8px;
+            background:rgba(66,133,244,.1);
+            border:1.5px solid rgba(66,133,244,.35);
+            border-radius:.85rem; padding:.55rem .75rem;
+            cursor:pointer; margin-bottom:.4rem;
+            transition:background .15s;
+        }
+        .av-google-opt:hover { background:rgba(66,133,244,.18); }
+        .av-google-opt img {
+            width:36px; height:36px;
+            border-radius:50%; object-fit:cover;
+            border:2px solid rgba(66,133,244,.5);
+            flex-shrink:0;
+        }
+        .av-google-opt-info { flex:1; }
+        .av-google-opt-label { font-size:.72rem; font-weight:800; color:#93c5fd; }
+        .av-google-opt-sub   { font-size:.6rem;  color:rgba(147,197,253,.55); }
+        .av-google-opt.selected {
+            background:rgba(66,133,244,.22);
+            border-color:rgba(66,133,244,.7);
+            box-shadow:0 0 12px rgba(66,133,244,.3);
+        }
+
         </style>
 </head>
 <body>
@@ -945,6 +1229,76 @@
   <div class="tip-text" id="liga-tip-text"></div>
 </div>
 
+
+<!-- ── MODAL POLÍTICA DE PRIVACIDAD ─────────────────────────── -->
+<div id="modal-privacy">
+  <div class="privacy-card">
+    <div class="privacy-header">
+      <div class="privacy-logo">
+        <svg width="30" height="30" viewBox="0 0 100 100">
+          <path d="M50 92 L86 73 L50 54 L14 73 Z" fill="#075985"/>
+          <path d="M50 83 L86 64 L50 45 L14 64 Z" fill="#0369a1"/>
+          <path d="M50 74 L86 55 L50 36 L14 55 Z" fill="#0284c7"/>
+          <path d="M50 65 L86 46 L50 27 L14 46 Z" fill="#0ea5e9"/>
+          <path d="M50 56 L72 45 L50 34 L28 45 Z" fill="#7dd3fc">
+            <animate attributeName="opacity" values="0.8;1;0.8" dur="2s" repeatCount="indefinite"/>
+          </path>
+          <circle cx="50" cy="45" r="3.5" fill="white" opacity=".9">
+            <animate attributeName="r" values="2.5;4;2.5" dur="3s" repeatCount="indefinite"/>
+          </circle>
+        </svg>
+        <span class="privacy-logo-text">Fatlin AI</span>
+      </div>
+      <div class="privacy-title">🔒 Política de Privacidad</div>
+      <div class="privacy-date">Última actualización: marzo 2026 · v1.0</div>
+    </div>
+    <div class="privacy-body" id="privacy-body">
+      <p>Fatlin AI <em>("nosotros", "nuestro" o "la Aplicación")</em> se compromete a proteger la privacidad de sus usuarios. Esta política describe cómo manejamos la información en el marco de nuestra plataforma gamificada de aprendizaje sobre la <strong>Metodología PACIE</strong>, con el respaldo de <strong>Planeta FATLA</strong> y <strong>ASOMTV</strong>.</p>
+      <h3>1. Información que Recopilamos</h3>
+      <p>Para el funcionamiento de la gamificación y el ranking, recopilamos:</p>
+      <ul>
+        <li><strong>Datos de Perfil:</strong> Nombre de usuario o pseudónimo, país y foto de perfil si el usuario la sube.</li>
+        <li><strong>Progreso Académico:</strong> Puntuaciones, niveles completados, rachas de estudio y diplomas obtenidos.</li>
+        <li><strong>Datos Técnicos:</strong> Identificadores de dispositivo, modelo de hardware y versión del sistema operativo.</li>
+      </ul>
+      <h3>2. Uso de la Información</h3>
+      <p>La información se utiliza exclusivamente para:</p>
+      <ul>
+        <li>Gestionar el <strong>Ranking Semanal</strong> y las <strong>Ligas Exponenciales</strong>.</li>
+        <li>Generar los <strong>Diplomas Micro-curriculares</strong> personalizados.</li>
+        <li>Sincronizar el progreso del usuario en diferentes dispositivos.</li>
+        <li>Mejorar la experiencia de aprendizaje mediante analítica anónima.</li>
+      </ul>
+      <h3>3. Publicidad y Terceros (AdMob)</h3>
+      <p>Fatlin AI utiliza <strong>Google AdMob</strong> para mostrar anuncios. Google puede utilizar identificadores de publicidad para mostrar anuncios relevantes basados en tus intereses.</p>
+      <ul>
+        <li>Puedes gestionar las preferencias de anuncios en la configuración de tu dispositivo.</li>
+        <li>No compartimos tu nombre real ni tus datos académicos específicos con los anunciantes.</li>
+      </ul>
+      <h3>4. Almacenamiento y Seguridad</h3>
+      <p>Sus datos se almacenan de forma segura en <strong>Firebase (Google Cloud)</strong>. Implementamos medidas de seguridad técnicas para evitar el acceso no autorizado o la pérdida de datos.</p>
+      <h3>5. Menores de Edad</h3>
+      <p>Nuestros contenidos están dirigidos a <strong>profesionales de la educación</strong> que están en proceso de formarse en áreas clave con vocación hacia la educación, acorde a las áreas de mejoramiento profesional de la comunidad virtual <strong>Planeta FATLA</strong> y/o <strong>tutores virtuales</strong>. No recopilamos conscientemente datos de menores de 13 años o la edad mínima legal en su país.</p>
+      <h3>6. Derechos del Usuario</h3>
+      <ul>
+        <li>Acceder, rectificar o eliminar su cuenta y datos en cualquier momento desde los ajustes de la app.</li>
+        <li>Retirar su consentimiento en cualquier momento sin efecto retroactivo.</li>
+        <li>Solicitar la baja de nuestra base de datos contactando a nuestro equipo de soporte.</li>
+      </ul>
+      <h3>7. Cambios en esta Política</h3>
+      <p>Nos reservamos el derecho de actualizar esta política. <strong>Se notificará a los usuarios a través de la aplicación</strong> y se solicitará nueva aceptación si los cambios son sustanciales.</p>
+    </div>
+    <div class="privacy-scroll-hint" id="privacy-scroll-hint">📜 Desplázate para leer toda la política antes de aceptar ↓</div>
+    <div class="privacy-footer">
+      <label class="privacy-check-row" id="privacy-check-row" for="chk-privacy">
+        <input type="checkbox" id="chk-privacy" onchange="onPrivacyCheck()">
+        <span class="privacy-check-label">He leído y acepto la <strong>Política de Privacidad</strong> de Fatlin AI y consiento el tratamiento de mis datos para los fines descritos.</span>
+      </label>
+      <button class="privacy-accept-btn" id="btn-privacy-accept" onclick="acceptPrivacy()" disabled>✅ Acepto y continuar</button>
+      <span class="privacy-decline-link" onclick="declinePrivacy()">No acepto — salir de la app</span>
+    </div>
+  </div>
+</div>
 
 <div id="game-container">
     <div id="game-hud">
@@ -1439,7 +1793,7 @@ const LANG = {
     shield_1_name:   '1 Escudo',
     shield_1_desc:   'Protege tu racha 1 vez',
     shield_3_name:   '3 Escudos',
-    shield_3_desc:   '¡Ahorra 50 estrellas!',
+    shield_3_desc:   '¡Ahorra 15 estrellas!',
     gala_24_name:    'Modo Gala 24h',
     gala_24_desc:    'Vidas infinitas + fondo estelar',
     gala_72_name:    'Modo Gala 72h',
@@ -1534,7 +1888,7 @@ const LANG = {
     shield_1_name:   '1 Shield',
     shield_1_desc:   'Protects your streak once',
     shield_3_name:   '3 Shields',
-    shield_3_desc:   'Save 50 stars!',
+    shield_3_desc:   'Save 15 stars!',
     gala_24_name:    'Gala Mode 24h',
     gala_24_desc:    'Infinite lives + starry background',
     gala_72_name:    'Gala Mode 72h',
@@ -1898,7 +2252,8 @@ let game=window.game={
   isProcessing:false, currentQ:null, levelQuestions:[], qIndex:0,
   badges:0, lastRewardAt:0,
   shields:0, streakDays:0, lastPlayDate:null,
-  ligaLevel:1, lastLigaWeek:null, _pendingLigaTip:null
+  ligaLevel:1, lastLigaWeek:null, _pendingLigaTip:null, lastRankPos:null,
+  privacyAcceptedAt:null
 };
 
 function showError(msg){const el=document.getElementById('error-msg');el.textContent=msg;el.style.display='block';setTimeout(()=>el.style.display='none',4500);}
@@ -1978,7 +2333,10 @@ async function loadProgress(){
   if(!cloudData && !localData){
     game.level = 1; game.stars = 0; game.lives = 5;
     game.lastDeathTime = null; game.badges = 0; game.lastRewardAt = 0;
-    selectedAvatar = "🧑"; tempAvatar = "🧑";
+    // Usuario nuevo: si tiene foto Google, usarla como avatar por defecto
+  const _gPhoto = getGooglePhotoURL();
+  selectedAvatar = _gPhoto || "🧑";
+  tempAvatar     = selectedAvatar;
   } else if(cloudOk && cloudData && !localData){
     game.level       = cloudData.level       || 1;
     game.stars       = cloudData.stars       || 0;
@@ -1986,15 +2344,19 @@ async function loadProgress(){
     game.lastDeathTime = cloudData.lastDeathTime || null;
     game.badges      = cloudData.badges      || 0;
     game.lastRewardAt= cloudData.lastRewardAt|| 0;
-    selectedAvatar   = cloudData.avatar      || "🧑";
-    tempAvatar       = selectedAvatar;
+    // Si no tiene avatar guardado o es el default, usar foto Google
+  { const _saved = cloudData.avatar; const _gp = getGooglePhotoURL();
+    selectedAvatar = (!_saved || _saved === "🧑") ? (_gp || "🧑") : _saved;
+    tempAvatar     = selectedAvatar; }
     game.shields     = cloudData.shields     || 0;
     game.streakDays  = cloudData.streakDays  || 0;
     game.lastPlayDate= cloudData.lastPlayDate|| null;
     game.diplomasEarned = cloudData.diplomasEarned || 0;
     game.infiniteLivesUntil = cloudData.infiniteLivesUntil || null;
-    game.ligaLevel   = typeof cloudData.ligaLevel==='number' ? cloudData.ligaLevel : 1;
-    game.lastLigaWeek= cloudData.lastLigaWeek || null;
+    game.ligaLevel       = typeof cloudData.ligaLevel==='number' ? cloudData.ligaLevel : 1;
+    game.lastLigaWeek    = cloudData.lastLigaWeek || null;
+    game.lastRankPos     = cloudData.lastRankPos || null;
+    game.privacyAcceptedAt = cloudData.privacyAcceptedAt || null;
   } else if(!cloudOk && localData){
     game.level       = localData.level       || 1;
     game.stars       = localData.stars       || 0;
@@ -2002,15 +2364,18 @@ async function loadProgress(){
     game.lastDeathTime = localData.lastDeathTime || null;
     game.badges      = localData.badges      || 0;
     game.lastRewardAt= localData.lastRewardAt|| 0;
-    selectedAvatar   = localData.avatar      || "🧑";
-    tempAvatar       = selectedAvatar;
+    { const _saved = localData.avatar; const _gp = getGooglePhotoURL();
+    selectedAvatar = (!_saved || _saved === "🧑") ? (_gp || "🧑") : _saved;
+    tempAvatar     = selectedAvatar; }
     game.shields     = localData.shields     || 0;
     game.streakDays  = localData.streakDays  || 0;
     game.lastPlayDate= localData.lastPlayDate|| null;
     game.diplomasEarned = localData.diplomasEarned || 0;
     game.infiniteLivesUntil = localData.infiniteLivesUntil || null;
-    game.ligaLevel   = typeof localData.ligaLevel==='number' ? localData.ligaLevel : 1;
-    game.lastLigaWeek= localData.lastLigaWeek || null;
+    game.ligaLevel       = typeof localData.ligaLevel==='number' ? localData.ligaLevel : 1;
+    game.lastLigaWeek    = localData.lastLigaWeek || null;
+    game.lastRankPos     = localData.lastRankPos || null;
+    game.privacyAcceptedAt = localData.privacyAcceptedAt || null;
   } else {
     const cloudLevel  = cloudData?.level  || 1;
     const localLevel  = localData?.level  || 1;
@@ -2025,15 +2390,16 @@ async function loadProgress(){
     game.lastDeathTime = newerSource.lastDeathTime || null;
     game.badges        = newerSource.badges        || 0;
     game.lastRewardAt  = newerSource.lastRewardAt  || 0;
-    selectedAvatar     = newerSource.avatar        || "🧑";
+    selectedAvatar     = (()=>{ const _s=newerSource.avatar; const _gp=getGooglePhotoURL(); return (!_s||_s==="🧑")?(_gp||"🧑"):_s; })();
     tempAvatar         = selectedAvatar;
     game.shields       = newerSource.shields       || 0;
     game.streakDays    = newerSource.streakDays    || 0;
     game.lastPlayDate  = newerSource.lastPlayDate  || null;
     game.diplomasEarned = Math.max(cloudData?.diplomasEarned||0, localData?.diplomasEarned||0);
     game.infiniteLivesUntil = Math.max(cloudData?.infiniteLivesUntil||0, localData?.infiniteLivesUntil||0) || null;
-    game.ligaLevel   = typeof newerSource.ligaLevel==='number' ? newerSource.ligaLevel : 1;
-    game.lastLigaWeek= newerSource.lastLigaWeek || null;
+    game.ligaLevel       = typeof newerSource.ligaLevel==='number' ? newerSource.ligaLevel : 1;
+    game.lastLigaWeek    = newerSource.lastLigaWeek || null;
+    game.privacyAcceptedAt = cloudData?.privacyAcceptedAt || localData?.privacyAcceptedAt || null;
     if(localLevel > cloudLevel) setTimeout(()=>saveProgress(), 1000);
   }
 
@@ -2167,8 +2533,191 @@ window.obFinish = function(){
   document.getElementById('modal-onboarding').classList.remove('active');
   try{ localStorage.setItem('fatlin_onboarding_done','1'); }catch(e){}
   game.isProcessing = false;
-  setTimeout(()=>{ renderMap(); centerCamera(); }, 200);
+  setTimeout(()=>{ renderMap(); centerCamera(); _startGameUI(); }, 200);
 };
+
+
+// ══════════════════════════════════════════════════════════════════
+//  DETECTOR DE CRUCE DE LÍNEA DE ASCENSO
+// ══════════════════════════════════════════════════════════════════
+async function checkRankCruce(){
+  if(!game.user || game.user.isAnonymous) return;
+  try {
+    const ws = getWeekStart();
+    const ligaActual = (typeof LIGAS !== 'undefined') ? (LIGAS[(game.ligaLevel||1)-1] || LIGAS[0]) : null;
+    const promoCut = ligaActual ? ligaActual.promoCut : 5;
+
+    // Cargar ranking de la semana actual
+    let pl = [];
+    try {
+      const q = query(collection(db,`fatlin_weekly_${APP_ID}`), orderBy('stars','desc'), limit(50));
+      const snap = await Promise.race([getDocs(q), new Promise((_,r)=>setTimeout(()=>r(new Error('t')),5000))]);
+      snap.forEach(d => {
+        const dat = d.data();
+        if(dat.weekStart === ws) pl.push({uid: dat.uid, stars: dat.stars||0});
+      });
+    } catch(e) { return; }
+
+    pl.sort((a,b) => b.stars - a.stars);
+    const myIdx = pl.findIndex(p => p.uid === game.user.uid);
+    if(myIdx < 0) return;
+
+    const myPos = myIdx + 1; // 1-based
+    const prevPos = game.lastRankPos;
+
+    // Detectar cruce: estaba fuera (>promoCut) y ahora está dentro (<=promoCut)
+    if(prevPos && prevPos > promoCut && myPos <= promoCut){
+      triggerCruceAnimation();
+    }
+
+    // Guardar posición actual para próxima comparación
+    game.lastRankPos = myPos;
+    // No llamar saveProgress aquí para evitar loop — se guarda en el siguiente saveProgress natural
+  } catch(e) { console.warn('[Cruce]', e); }
+}
+
+function triggerCruceAnimation(){
+  const overlay = document.getElementById('cruce-overlay');
+  if(!overlay) return;
+
+  // Texto personalizado
+  const name = game.user?.displayName?.split(' ')[0] || 'Tutor';
+  const title = document.getElementById('cruce-title');
+  const sub   = document.getElementById('cruce-sub');
+  if(title) title.textContent = `¡${name}, cruzaste la Zona de Ascenso!`;
+  if(sub)   sub.textContent   = 'Mantén tu posición esta semana para recibir tu diploma el lunes.';
+
+  // Recrear el flash para re-trigger de la animación CSS
+  const oldFlash = overlay.querySelector('.cruce-line-flash');
+  if(oldFlash) oldFlash.remove();
+  const newFlash = document.createElement('div');
+  newFlash.className = 'cruce-line-flash';
+  overlay.insertBefore(newFlash, overlay.firstChild);
+
+  overlay.classList.add('active');
+  setTimeout(() => overlay.classList.remove('active'), 2800);
+
+  // Sonido de éxito
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+    [523, 659, 784, 1047].forEach((freq, i) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+      osc.connect(gain); gain.connect(ctx.destination);
+      osc.frequency.value = freq;
+      osc.type = 'sine';
+      const t = ctx.currentTime + i * 0.12;
+      gain.gain.setValueAtTime(0, t);
+      gain.gain.linearRampToValueAtTime(0.18, t + 0.04);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.35);
+      osc.start(t); osc.stop(t + 0.4);
+    });
+  } catch(e) {}
+
+  // Mascota celebra
+  if(typeof mascotSetState === 'function') mascotSetState('win', 2000);
+  if(typeof resetMascotIdleTimer === 'function') resetMascotIdleTimer();
+}
+
+
+// ══════════════════════════════════════════════════════════════════
+//  SISTEMA DE POLÍTICA DE PRIVACIDAD
+// ══════════════════════════════════════════════════════════════════
+function needsPrivacy(){
+  return !game.privacyAcceptedAt;
+}
+
+function showPrivacyModal(onAccepted){
+  const modal = document.getElementById('modal-privacy');
+  const btn   = document.getElementById('btn-privacy-accept');
+  const chk   = document.getElementById('chk-privacy');
+  const body  = document.getElementById('privacy-body');
+  const hint  = document.getElementById('privacy-scroll-hint');
+  chk.checked = false;
+  btn.disabled = true;
+  if(hint) hint.style.display = '';
+  window._privacyCallback = onAccepted;
+  // Scroll hint desaparece al fondo
+  body.onscroll = function(){
+    if(body.scrollTop + body.clientHeight >= body.scrollHeight - 30){
+      if(hint){ hint.style.opacity='0'; hint.style.transition='opacity .4s'; setTimeout(()=>hint.style.display='none',400); }
+    }
+  };
+  modal.classList.add('active');
+}
+
+window.onPrivacyCheck = function(){
+  const chk = document.getElementById('chk-privacy');
+  const btn = document.getElementById('btn-privacy-accept');
+  const row = document.getElementById('privacy-check-row');
+  btn.disabled = !chk.checked;
+  if(row) row.classList.toggle('checked', chk.checked);
+};
+
+window.acceptPrivacy = async function(){
+  const btn = document.getElementById('btn-privacy-accept');
+  btn.disabled = true;
+  btn.textContent = '⏳ Guardando...';
+  game.privacyAcceptedAt = Date.now();
+  try{ await saveProgress(); }catch(e){}
+  document.getElementById('modal-privacy').classList.remove('active');
+  btn.textContent = '✅ Acepto y continuar';
+  if(typeof window._privacyCallback === 'function'){
+    window._privacyCallback();
+    window._privacyCallback = null;
+  }
+};
+
+window.declinePrivacy = function(){
+  if(confirm('Si no aceptas la política de privacidad no podrás usar Fatlin AI. ¿Deseas salir?')){
+    try{ signOut(auth).catch(()=>{}); }catch(e){}
+    game.user = null;
+    document.getElementById('modal-privacy').classList.remove('active');
+    document.getElementById('game-container').style.display = 'none';
+    const as = document.getElementById('auth-screen');
+    if(as) as.style.display = 'flex';
+  }
+};
+
+// ══════════════════════════════════════════════════════════════════
+//  SISTEMA DE AVATAR CON FOTO GOOGLE
+// ══════════════════════════════════════════════════════════════════
+
+// Retorna true si el avatar actual es una URL de foto (no emoji)
+function avatarIsPhoto(){
+  return selectedAvatar && selectedAvatar.startsWith('http');
+}
+
+// Retorna la foto de Google del usuario si está disponible
+function getGooglePhotoURL(){
+  try {
+    const u = game.user || (typeof auth !== 'undefined' ? auth.currentUser : null);
+    return (u && !u.isAnonymous && u.photoURL) ? u.photoURL : null;
+  } catch(e){ return null; }
+}
+
+// Renderiza un elemento avatar (div/span) con foto o emoji
+// el: elemento DOM target, size opcional para <img>
+function setAvatarEl(el, size){
+  if(!el) return;
+  const photo = avatarIsPhoto() ? selectedAvatar : null;
+  if(photo){
+    el.classList.add('has-photo');
+    el.innerHTML = `<img src="${photo}" alt="avatar" onerror="this.parentElement.classList.remove('has-photo');this.parentElement.textContent='🧑';">`;
+  } else {
+    el.classList.remove('has-photo');
+    el.textContent = selectedAvatar || '🧑';
+  }
+}
+
+// Genera HTML de avatar para uso en ranking/listas (no modifica DOM)
+function getAvatarHTML(avatarVal, sizePx){
+  sizePx = sizePx || 28;
+  if(avatarVal && avatarVal.startsWith('http')){
+    return `<img src="${avatarVal}" alt="av" style="width:${sizePx}px;height:${sizePx}px;border-radius:50%;object-fit:cover;vertical-align:middle;" onerror="this.outerHTML='🧑'">`;
+  }
+  return `<span style="font-size:${Math.round(sizePx*.85)}px">${avatarVal||'🧑'}</span>`;
+}
 
 
 async function saveProgress(){if(!game.user)return;const payload={
@@ -2180,8 +2729,13 @@ async function saveProgress(){if(!game.user)return;const payload={
     shields:game.shields, streakDays:game.streakDays,
     lastPlayDate:game.lastPlayDate, diplomasEarned:game.diplomasEarned,
     infiniteLivesUntil:game.infiniteLivesUntil,
-    ligaLevel:game.ligaLevel||1, lastLigaWeek:game.lastLigaWeek||null
-  };localStorage.setItem(`fatlin_save_${game.user.uid}`,JSON.stringify(payload));try{await setDoc(doc(db,`artifacts/${APP_ID}/users/${game.user.uid}/progress/current`),payload,{merge:true});const now=Date.now(),ws=getWeekStart();await setDoc(doc(db,`fatlin_ranking_${APP_ID}`,game.user.uid),{displayName:payload.displayName,level:game.level,stars:game.stars,avatar:selectedAvatar,updatedAt:now},{merge:true});await setDoc(doc(db,`fatlin_weekly_${APP_ID}`,`${ws}_${game.user.uid}`),{displayName:payload.displayName,level:game.level,stars:game.stars,avatar:selectedAvatar,weekStart:ws,uid:game.user.uid,updatedAt:now},{merge:true});}catch(e){}}
+    ligaLevel:game.ligaLevel||1, lastLigaWeek:game.lastLigaWeek||null,
+    lastRankPos:game.lastRankPos||null,
+    privacyAcceptedAt:game.privacyAcceptedAt||null
+  };localStorage.setItem(`fatlin_save_${game.user.uid}`,JSON.stringify(payload));try{await setDoc(doc(db,`artifacts/${APP_ID}/users/${game.user.uid}/progress/current`),payload,{merge:true});const now=Date.now(),ws=getWeekStart();await setDoc(doc(db,`fatlin_ranking_${APP_ID}`,game.user.uid),{displayName:payload.displayName,level:game.level,stars:game.stars,avatar:selectedAvatar,updatedAt:now},{merge:true});await setDoc(doc(db,`fatlin_weekly_${APP_ID}`,`${ws}_${game.user.uid}`),{displayName:payload.displayName,level:game.level,stars:game.stars,avatar:selectedAvatar,weekStart:ws,uid:game.user.uid,updatedAt:now},{merge:true});}catch(e){}
+  // Detectar cruce de línea de ascenso (silencioso, en background)
+  setTimeout(()=>checkRankCruce(), 1500);
+}
 
 function mascotShow(){ document.getElementById('fatlin-mascot').style.display='block'; }
 function mascotSetState(state, duration=0){
@@ -2228,25 +2782,43 @@ function triggerLevel5Blast(level){
 
 function initGameUI(){
   document.getElementById('hud-avatar').onclick = openAvatarPicker;
+  // Aplicar foto/emoji en HUD desde el inicio
+  setAvatarEl(document.getElementById('hud-avatar'));
   applyLang();
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('game-container').style.display='block';
   renderMap(); updateHUD(); mascotShow(); resetMascotIdleTimer(); startRestTimer();
-  // Onboarding solo para jugadores nuevos (nivel 1, nunca visto)
+  // ── Política de privacidad primero ──
+  if(needsPrivacy()){
+    game.isProcessing = true;
+    showPrivacyModal(function(){
+      game.isProcessing = false;
+      if(game.level === 1 && !localStorage.getItem('fatlin_onboarding_done')){
+        game.isProcessing = true;
+        document.getElementById('modal-onboarding').classList.add('active');
+      } else { _startGameUI(); }
+    });
+    return;
+  }
+  // ── Onboarding si es nuevo ──
   if(game.level === 1 && !localStorage.getItem('fatlin_onboarding_done')){
     game.isProcessing = true;
     document.getElementById('modal-onboarding').classList.add('active');
     return;
   }
+  _startGameUI();
+}
+
+function _startGameUI(){
   setTimeout(async()=>{ try{ const u=game.user||auth.currentUser; if(u){ await u.getIdToken(); prefetchAhead(game.level-1,3); } }catch(e){} }, 6000);
-  setTimeout(()=>{centerCamera(true);window.hideSplash();if(!('ontouchstart' in window)){const h=document.getElementById('scroll-hint');h.classList.add('visible');setTimeout(()=>h.classList.remove('visible'),4000);}},200);
+  setTimeout(()=>{centerCamera(true);if(!('ontouchstart' in window)){const h=document.getElementById('scroll-hint');h.classList.add('visible');setTimeout(()=>h.classList.remove('visible'),4000);}},200);
 }
 
 function checkLivesRegen(){
   const isGala = game.infiniteLivesUntil && game.infiniteLivesUntil > Date.now();
   if(isGala){ document.getElementById('stat-timer').style.display='none'; updateHUD(); return; }
   if(game.lives<5&&game.lastDeathTime){
-    const REGEN_MS = 180*60*1000; // 3 horas por vida
+    const REGEN_MS = 10*60*60*1000; // 3 horas por vida
     const elapsed = Date.now()-game.lastDeathTime;
     const livesRegened = Math.floor(elapsed / REGEN_MS);
     if(livesRegened > 0){
@@ -2263,7 +2835,7 @@ function checkLivesRegen(){
   }
   const ti=document.getElementById('stat-timer');
   if(game.lives<5&&game.lastDeathTime){
-    const REGEN_MS = 180*60*1000;
+    const REGEN_MS = 10*60*60*1000;
     ti.style.display='inline';
     const r = REGEN_MS - (Date.now()-game.lastDeathTime);
     if(r>0){const m=Math.floor(r/60000),s=Math.floor((r%60000)/1000);ti.innerText=`${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;}
@@ -2439,16 +3011,77 @@ document.getElementById('btn-reward-close').onclick=()=>document.getElementById(
 // getWeekStart definida arriba en sistema de ligas (soporta offsetMs)
 function getWeekCountdown(){const n=new Date(),d=n.getUTCDay(),df=d===0?0:7-d,nx=new Date(n);nx.setUTCDate(n.getUTCDate()+df+1);nx.setUTCHours(0,0,0,0);const ms=nx-n,dd=Math.floor(ms/86400000),h=Math.floor((ms%86400000)/3600000),mm=Math.floor((ms%3600000)/60000);return`Reinicia en ${dd}d ${h}h ${mm}m`;}
 function getWeekLabel(){const ws=new Date(getWeekStart()+'T00:00:00Z'),o={day:'numeric',month:'long'};return`${ws.toLocaleDateString('es-ES',o)} – ${new Date(ws.getTime()+6*86400000).toLocaleDateString('es-ES',o)}`;}
-function buildRankItem(p,idx,isMe,maxL,showL=false){const medals=['🥇','🥈','🥉'];const medal=medals[idx]!=null?medals[idx]:`<span style="font-size:.8rem;color:#94a3b8;font-weight:700">${idx+1}</span>`;const lb=(showL&&idx<5)?'<span class="lbadge">⚡ Liga</span>':'';const item=document.createElement('div');item.className=`ritem${isMe?' me':''}`;item.innerHTML=`<div style="font-size:1.4rem;width:32px;text-align:center">${medal}</div><div style="font-size:1.3rem;margin-right:6px;flex-shrink:0">${p.avatar||'🧑'}</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:#1e293b;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${p.displayName||'Jugador'}${isMe?' <span style="color:#0ea5e9">(Tú)</span>':''}${lb}</span><span style="font-size:.75rem;font-weight:700;color:#0284c7">Nv.${p.level}</span></div><div class="rbar" style="margin-top:4px"><div class="rbar-fill" style="width:${Math.round((p.level/maxL)*100)}%"></div></div><span style="font-size:10px;color:#94a3b8">⭐ ${p.stars||0} pts</span></div>`;return item;}
+function buildRankItem(p,idx,isMe,maxL,showL=false,promoCut=0){
+  const medals=['🥇','🥈','🥉'];
+  const medal=medals[idx]!=null?medals[idx]:`<span style="font-size:.8rem;color:#94a3b8;font-weight:700">${idx+1}</span>`;
+  const lb=(showL&&idx<5)?'<span class="lbadge">⚡ Liga</span>':'';
+  const item=document.createElement('div');
+  // Clases above-line / below-line según posición respecto al corte
+  let lineClass = '';
+  if(promoCut > 0){
+    lineClass = idx < promoCut ? ' above-line' : ' below-line';
+  }
+  item.className=`ritem${isMe?' me':''}${lineClass}`;
+  item.innerHTML=`<div style="font-size:1.4rem;width:32px;text-align:center">${medal}</div><div style="margin-right:6px;flex-shrink:0;display:flex;align-items:center">${getAvatarHTML(p.avatar,26)}</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:#1e293b;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${p.displayName||'Jugador'}${isMe?' <span style="color:#0ea5e9">(Tú)</span>':''}${lb}</span><span style="font-size:.75rem;font-weight:700;color:#0284c7">Nv.${p.level}</span></div><div class="rbar" style="margin-top:4px"><div class="rbar-fill" style="width:${Math.round((p.level/maxL)*100)}%"></div></div><span style="font-size:10px;color:#94a3b8">⭐ ${p.stars||0} pts</span></div>`;
+  return item;
+}
 function buildErrFallback(el){el.innerHTML=`<div style="text-align:center;padding:1rem"><p style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Sin conexión o sin datos.</p><div class="ritem me"><div style="font-size:1.4rem;width:32px;text-align:center">🏆</div><div style="font-size:1.3rem;margin-right:6px">${selectedAvatar}</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-weight:700;color:#1e293b;font-size:.85rem">Tú (local)</span><span style="font-size:.75rem;font-weight:700;color:#0284c7">Nv.${game.level}</span></div><div class="rbar" style="margin-top:4px"><div class="rbar-fill" style="width:100%"></div></div><span style="font-size:10px;color:#94a3b8">⭐ ${game.stars} pts</span></div></div></div>`;}
 window.switchRankTab=function(tab){document.getElementById('tab-global').classList.toggle('active',tab==='global');document.getElementById('tab-liga').classList.toggle('active',tab==='liga');document.getElementById('panel-global').style.display=tab==='global'?'':'none';document.getElementById('panel-liga').style.display=tab==='liga'?'':'none';if(tab==='liga')loadLigaData();};
 async function loadGlobalRanking(){const list=document.getElementById('ranking-list');list.innerHTML='<div class="ldots"><span></span><span></span><span></span></div>';try{let pl=[];try{const q=query(collection(db,`fatlin_ranking_${APP_ID}`),orderBy('level','desc'),limit(25));const s=await getDocs(q);s.forEach(d=>pl.push({id:d.id,...d.data()}));}catch(e){const s=await getDocs(collection(db,`fatlin_ranking_${APP_ID}`));s.forEach(d=>pl.push({id:d.id,...d.data()}));pl.sort((a,b)=>(b.level||0)-(a.level||0)||(b.stars||0)-(a.stars||0));pl=pl.slice(0,25);}if(!pl.length){list.innerHTML='<p style="text-align:center;color:#94a3b8;padding:2rem;font-size:.85rem">¡Sé el primero!</p>';return;}list.innerHTML='';const ml=Math.max(...pl.map(p=>p.level||1));pl.forEach((p,i)=>{const isMe=game.user&&p.id===game.user.uid;if(i===4&&pl.length>5){const d=document.createElement('div');d.className='rdiv';list.appendChild(d);}list.appendChild(buildRankItem(p,i,isMe,ml,true));});const inL=pl.some(p=>game.user&&p.id===game.user.uid);if(!inL&&game.user){const sep=document.createElement('p');sep.style.cssText='font-size:10px;color:#94a3b8;text-align:center;margin:.5rem 0;font-weight:700;text-transform:uppercase;letter-spacing:.1em';sep.innerText='— Tu posición —';list.appendChild(sep);list.appendChild(buildRankItem({id:game.user.uid,displayName:game.user.displayName||game.user.email?.split('@')[0]||'Tú',level:game.level,stars:game.stars,avatar:selectedAvatar},999,true,ml,false));}}catch(e){buildErrFallback(list);}}
-async function loadLigaData(){document.getElementById('liga-week-lbl').innerText=getWeekLabel();document.getElementById('liga-cnt').innerText=getWeekCountdown();const t5=document.getElementById('liga-top5'),fu=document.getElementById('liga-full');t5.innerHTML='<div class="ldots"><span></span><span></span><span></span></div>';fu.innerHTML='';try{const ws=getWeekStart();let pl=[];try{const q=query(collection(db,`fatlin_weekly_${APP_ID}`),orderBy('stars','desc'),limit(50));const s=await getDocs(q);s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}catch(e){const s=await getDocs(collection(db,`fatlin_weekly_${APP_ID}`));s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}pl.sort((a,b)=>(b.stars||0)-(a.stars||0)||(b.level||0)-(a.level||0));pl=pl.slice(0,25);if(!pl.length){t5.innerHTML='<p style="color:rgba(186,230,253,.7);font-size:.8rem;text-align:center">Nadie ha jugado.</p>';fu.innerHTML='';return;}t5.innerHTML='';const medals=['🥇','🥈','🥉','🏅','🏅'];pl.slice(0,5).forEach((p,i)=>{const isMe=game.user&&p.uid===game.user.uid;const item=document.createElement('div');item.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.1)';item.innerHTML=`<span style="font-size:1.3rem;width:28px;text-align:center">${medals[i]}</span><span style="font-size:1.2rem">${p.avatar||'🧑'}</span><div style="flex:1;min-width:0"><p style="color:white;font-weight:700;font-size:.85rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.displayName||'Jugador'}${isMe?' (Tú)':''}</p><p style="color:rgba(255,255,255,.6);font-size:.7rem;margin:0">⭐ ${p.stars||0} pts · Nv.${p.level}</p></div>`;t5.appendChild(item);});fu.innerHTML='';const ms=Math.max(...pl.map(p=>p.stars||1));pl.forEach((p,i)=>{const isMe=game.user&&p.uid===game.user.uid;fu.appendChild(buildRankItem({id:p.uid,displayName:p.displayName,level:p.level,stars:p.stars,avatar:p.avatar},i,isMe,ms,false));});}catch(e){t5.innerHTML='<p style="color:rgba(186,230,253,.7);font-size:.8rem;text-align:center">Error.</p>';buildErrFallback(fu);}}
+async function loadLigaData(){document.getElementById('liga-week-lbl').innerText=getWeekLabel();document.getElementById('liga-cnt').innerText=getWeekCountdown();const t5=document.getElementById('liga-top5'),fu=document.getElementById('liga-full');t5.innerHTML='<div class="ldots"><span></span><span></span><span></span></div>';fu.innerHTML='';try{const ws=getWeekStart();let pl=[];try{const q=query(collection(db,`fatlin_weekly_${APP_ID}`),orderBy('stars','desc'),limit(50));const s=await getDocs(q);s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}catch(e){const s=await getDocs(collection(db,`fatlin_weekly_${APP_ID}`));s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}pl.sort((a,b)=>(b.stars||0)-(a.stars||0)||(b.level||0)-(a.level||0));pl=pl.slice(0,25);if(!pl.length){t5.innerHTML='<p style="color:rgba(186,230,253,.7);font-size:.8rem;text-align:center">Nadie ha jugado.</p>';fu.innerHTML='';return;}t5.innerHTML='';const medals=['🥇','🥈','🥉','🏅','🏅'];pl.slice(0,5).forEach((p,i)=>{const isMe=game.user&&p.uid===game.user.uid;const item=document.createElement('div');item.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.1)';item.innerHTML=`<span style="font-size:1.3rem;width:28px;text-align:center">${medals[i]}</span><span style="display:inline-flex;align-items:center">${getAvatarHTML(p.avatar,22)}</span><div style="flex:1;min-width:0"><p style="color:white;font-weight:700;font-size:.85rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.displayName||'Jugador'}${isMe?' (Tú)':''}</p><p style="color:rgba(255,255,255,.6);font-size:.7rem;margin:0">⭐ ${p.stars||0} pts · Nv.${p.level}</p></div>`;t5.appendChild(item);});fu.innerHTML='';const ms=Math.max(...pl.map(p=>p.stars||1));
+  // ── Calcular corte de ascenso para la liga actual ──
+  const ligaActual = (typeof LIGAS !== 'undefined') ? (LIGAS[(game.ligaLevel||1)-1] || LIGAS[0]) : null;
+  const promoCut = ligaActual ? ligaActual.promoCut : 5;
+  // ── Posición del usuario en este ranking ──
+  const myIdx = pl.findIndex(p => game.user && p.uid === game.user.uid);
+  const myPos = myIdx + 1; // 1-based
+  const atCut = myPos > 0 && Math.abs(myPos - promoCut) <= 2; // zona de tensión: ±2 del corte
+  const justAbove = myPos > 0 && myPos <= promoCut;
+  const justBelow = myPos > promoCut;
+  // ── Calcular puntos de diferencia al corte ──
+  let proximityMsg = '';
+  if(myIdx >= 0 && atCut && justBelow){
+    const cutPlayer = pl[promoCut - 1];
+    if(cutPlayer){
+      const diff = (cutPlayer.stars||0) - (pl[myIdx].stars||0);
+      const levels = Math.ceil(diff / 15);
+      proximityMsg = diff <= 0
+        ? '⚡ ¡Estás empatado en la Zona de Ascenso!'
+        : `Estás a solo ${diff} pts (≈${levels} nivel${levels!==1?'es':''} perfecto${levels!==1?'s':''}) de ascender`;
+    }
+  } else if(myIdx >= 0 && atCut && justAbove){
+    const dangerPlayer = pl[promoCut]; // primero fuera del corte
+    if(dangerPlayer){
+      const diff = (pl[myIdx].stars||0) - (dangerPlayer.stars||0);
+      proximityMsg = diff <= 30
+        ? `⚠️ ¡Cuidado! Te siguen a solo ${diff} pts — sigue jugando para mantenerte`
+        : '';
+    }
+  }
+  pl.forEach((p,i)=>{
+    const isMe=game.user&&p.uid===game.user.uid;
+    // Insertar línea neón ENTRE el último clasificado y el primero fuera
+    if(i === promoCut){
+      const lineEl = document.createElement('div');
+      lineEl.className = 'rank-ascenso-line' + (atCut && justBelow ? ' danger' : '');
+      lineEl.innerHTML = '<span class="rank-ascenso-badge">⬆ ZONA DE ASCENSO</span>';
+      fu.appendChild(lineEl);
+      // Mensaje de proximidad justo debajo de la línea
+      if(proximityMsg){
+        const msgEl = document.createElement('div');
+        msgEl.className = 'rank-proximity-msg';
+        msgEl.textContent = proximityMsg;
+        fu.appendChild(msgEl);
+      }
+    }
+    fu.appendChild(buildRankItem({id:p.uid,displayName:p.displayName,level:p.level,stars:p.stars,avatar:p.avatar},i,isMe,ms,false,promoCut));
+  });
+  }catch(e){t5.innerHTML='<p style="color:rgba(186,230,253,.7);font-size:.8rem;text-align:center">Error.</p>';buildErrFallback(fu);}}
 setInterval(()=>{const el=document.getElementById('liga-cnt');if(el&&document.getElementById('panel-liga').style.display!=='none')el.innerText=getWeekCountdown();},60000);
 document.getElementById('btn-ranking').onclick=async()=>{document.getElementById('modal-ranking').classList.add('active');document.getElementById('tab-global').classList.add('active');document.getElementById('tab-liga').classList.remove('active');document.getElementById('panel-global').style.display='';document.getElementById('panel-liga').style.display='none';await loadGlobalRanking();};
 document.getElementById('btn-close-ranking').onclick=()=>document.getElementById('modal-ranking').classList.remove('active');
 
-function openAccountModal(){document.getElementById('acc-name').innerText=game.user?.displayName||game.user?.email?.split('@')[0]||'Invitado';document.getElementById('acc-email').innerText=game.user?.email||(game.user?.isAnonymous?'Sesión anónima':'—');document.getElementById('acc-level').innerText=game.level;document.getElementById('acc-stars').innerText=game.stars;document.getElementById('acc-badges').innerText=game.badges;document.getElementById('acc-av').innerText=selectedAvatar;document.getElementById('modal-account').classList.add('active');}
+function openAccountModal(){document.getElementById('acc-name').innerText=game.user?.displayName||game.user?.email?.split('@')[0]||'Invitado';document.getElementById('acc-email').innerText=game.user?.email||(game.user?.isAnonymous?'Sesión anónima':'—');document.getElementById('acc-level').innerText=game.level;document.getElementById('acc-stars').innerText=game.stars;document.getElementById('acc-badges').innerText=game.badges;setAvatarEl(document.getElementById('acc-av'));document.getElementById('modal-account').classList.add('active');}
 document.getElementById('btn-account').onclick=openAccountModal;
 document.getElementById('btn-close-account').onclick=()=>document.getElementById('modal-account').classList.remove('active');
 document.getElementById('btn-chgav').onclick=()=>{document.getElementById('modal-account').classList.remove('active');openAvatarPicker();};
@@ -2459,7 +3092,7 @@ document.getElementById('btn-new-acc').onclick=()=>{try{signOut(auth).catch(()=>
 window.openLogros = function openLogros(){
   console.log('[Logros] game:', game?.level, 'badges:', game?.badges, 'diplomas:', game?.diplomasEarned);
   // Datos del usuario
-  document.getElementById('logros-avatar').textContent = selectedAvatar || '🧑';
+  setAvatarEl(document.getElementById('logros-avatar'));
   document.getElementById('logros-name').textContent = game.user?.displayName || game.user?.email?.split('@')[0] || 'Usuario';
   document.getElementById('logros-level').textContent = 'Nivel ' + game.level + ' · ' + game.stars + ' ⭐';
 
@@ -2483,16 +3116,19 @@ window.openLogros = function openLogros(){
   // Diplomas
   const diplomasList = document.getElementById('logros-diplomas-list');
   diplomasList.innerHTML = '';
-  const diplomasCount = game.diplomasEarned || 0;
-  if(diplomasCount > 0){
-    // Diplomas cada 20 niveles
-    const diplomaTiers = [
-      {min:20, emoji:'📜', title:'Diploma Fundamentos PACIE', sub:'Completaste 20 niveles'},
-      {min:40, emoji:'🎓', title:'Diploma Practicante PACIE', sub:'Completaste 40 niveles'},
-      {min:60, emoji:'🏛️', title:'Diploma Experto PACIE', sub:'Completaste 60 niveles'},
-      {min:80, emoji:'👑', title:'Diploma Máster PACIE', sub:'Completaste 80 niveles'},
-    ];
-    diplomaTiers.filter(d => game.level > d.min).forEach(d => {
+  // Diplomas: mismos tiers que checkMilestones
+  const diplomaTiers = [
+    {min:50,  emoji:'🥇', title:'Diploma Fundamentos PACIE',  sub:'Completaste 50 niveles'},
+    {min:100, emoji:'💎', title:'Diploma Practicante PACIE',  sub:'Completaste 100 niveles'},
+    {min:150, emoji:'🚀', title:'Diploma Experto PACIE',      sub:'Completaste 150 niveles'},
+    {min:200, emoji:'👑', title:'Diploma Máster PACIE',       sub:'Completaste 200 niveles'},
+    {min:250, emoji:'🌟', title:'Diploma Élite PACIE',        sub:'Completaste 250 niveles'},
+    {min:300, emoji:'🏛️', title:'Diploma Gran Maestro PACIE', sub:'Completaste 300 niveles'},
+  ];
+  // Diploma ganado cuando level > min (pasó ese hito)
+  const earned = diplomaTiers.filter(d => game.level > d.min);
+  if(earned.length > 0){
+    earned.forEach(d => {
       const div = document.createElement('div');
       div.className = 'diploma-item';
       div.innerHTML = `<span class="diploma-emoji">${d.emoji}</span>
@@ -2504,14 +3140,53 @@ window.openLogros = function openLogros(){
       diplomasList.appendChild(div);
     });
   } else {
-    diplomasList.innerHTML = '<div class="no-logros">Aún no tienes diplomas.<br>¡Completa 20 niveles para obtener el primero!</div>';
+    const remaining = 50 - ((game.level - 1) % 50);
+    diplomasList.innerHTML = `<div class="no-logros">Aún no tienes diplomas.<br>¡Te faltan <strong>${remaining} nivel${remaining!==1?'es':''}</strong> para obtener el primero!</div>`;
   }
 
   document.getElementById('modal-logros').classList.add('active');
 }
 
-window.openAvatarPicker = function openAvatarPicker(){const g=document.getElementById('av-grid');g.innerHTML='';tempAvatar=selectedAvatar;AVATARS.forEach(av=>{const b=document.createElement('div');b.className=`avopt${av===selectedAvatar?' selected':''}`;b.innerText=av;b.onclick=()=>{document.querySelectorAll('.avopt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');tempAvatar=av;};g.appendChild(b);});document.getElementById('modal-avatar').classList.add('active');}
-document.getElementById('btn-confirm-av').onclick=()=>{selectedAvatar=tempAvatar;document.getElementById('hud-avatar').innerText=selectedAvatar;document.getElementById('modal-avatar').classList.remove('active');saveProgress();updateHUD();};
+window.openAvatarPicker = function openAvatarPicker(){
+  const g = document.getElementById('av-grid');
+  g.innerHTML = '';
+  tempAvatar = selectedAvatar;
+
+  // ── Opción foto de Google (solo si está disponible) ──
+  const gPhoto = getGooglePhotoURL();
+  if(gPhoto){
+    const gRow = document.createElement('div');
+    gRow.className = 'av-google-opt' + (selectedAvatar === gPhoto ? ' selected' : '');
+    gRow.innerHTML = `
+      <img src="${gPhoto}" alt="Foto Google" onerror="this.parentElement.style.display='none'">
+      <div class="av-google-opt-info">
+        <div class="av-google-opt-label">📷 Usar foto de Google</div>
+        <div class="av-google-opt-sub">Tu foto de perfil actual</div>
+      </div>`;
+    gRow.onclick = () => {
+      document.querySelectorAll('.avopt, .av-google-opt').forEach(x => x.classList.remove('selected'));
+      gRow.classList.add('selected');
+      tempAvatar = gPhoto;
+    };
+    g.appendChild(gRow);
+  }
+
+  // ── Emojis disponibles ──
+  AVATARS.forEach(av => {
+    const b = document.createElement('div');
+    b.className = `avopt${av === selectedAvatar ? ' selected' : ''}`;
+    b.textContent = av;
+    b.onclick = () => {
+      document.querySelectorAll('.avopt, .av-google-opt').forEach(x => x.classList.remove('selected'));
+      b.classList.add('selected');
+      tempAvatar = av;
+    };
+    g.appendChild(b);
+  });
+
+  document.getElementById('modal-avatar').classList.add('active');
+}
+document.getElementById('btn-confirm-av').onclick=()=>{selectedAvatar=tempAvatar;setAvatarEl(document.getElementById('hud-avatar'));document.getElementById('modal-avatar').classList.remove('active');saveProgress();updateHUD();};
 
 function updateHUD(){
   const isGuest = game.user?.isAnonymous;
@@ -2522,7 +3197,7 @@ function updateHUD(){
   document.getElementById('stat-lives').innerText = isGala ? '∞' : game.lives;
   document.getElementById('stat-level').innerText = `Nv.${game.level}`;
   document.getElementById('stat-user').innerText = game.user?.displayName||game.user?.email?.split('@')[0]||"Invitado";
-  document.getElementById('hud-avatar').innerText = selectedAvatar;
+  setAvatarEl(document.getElementById('hud-avatar'));
 
   // Escudos: ocultos para invitados
   const shEl = document.getElementById('stat-shields');
@@ -2617,11 +3292,11 @@ function checkMilestones(newLevel){
   if(justCompleted > 0 && justCompleted % 5 === 0){
     setTimeout(()=>triggerLevel5Blast(justCompleted), justCompleted % 10 === 0 ? 300 : 0);
   }
-  if(newLevel > 1 && (newLevel-1) % 50 === 0){
-    const diplomaLevel = newLevel - 1;
+  // Diplomas cada 50 niveles: 50, 100, 150, 200...
+  if(justCompleted > 0 && justCompleted % 50 === 0){
     game.diplomasEarned++;
     saveProgress();
-    setTimeout(()=>generateDiploma(diplomaLevel), 1800);
+    setTimeout(()=>generateDiploma(justCompleted), 1800);
   }
 }
 
@@ -2712,6 +3387,17 @@ document.getElementById('btn-dip-print').onclick = async () => {
         body{font-family:Inter,sans-serif;background:#fffbeb;display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
         ${Array.from(document.styleSheets).flatMap(ss=>{try{return Array.from(ss.cssRules).map(r=>r.cssText);}catch(e){return [];}}).filter(r=>r.includes('diploma')).join('\n')}
       </style></head><body>${el.outerHTML}<script>window.onload=()=>setTimeout(()=>window.print(),800)<\/script>
+
+<!-- ── OVERLAY MOMENTO DE CRUCE ─────────────────────────────── -->
+<div id="cruce-overlay">
+  <div class="cruce-line-flash"></div>
+  <div class="cruce-msg">
+    <span class="cruce-icon">🚀</span>
+    <div class="cruce-title" id="cruce-title">¡Cruzaste la Zona de Ascenso!</div>
+    <div class="cruce-sub" id="cruce-sub">Mantén tu posición esta semana<br>para recibir tu diploma el lunes.</div>
+  </div>
+</div>
+
 </body></html>`);
       w.document.close();
     }
@@ -2883,13 +3569,47 @@ window.onresize=()=>{if(game.user){renderMap();centerCamera();}};
   let _restCount = 0;
   const REST_INTERVAL_MS = 10 * 60 * 1000; // 10 min
 
-  const tips = [
-    'Tu cerebro aprende mejor con pausas cortas. 👀 Aparta la vista de la pantalla unos minutos — ¡vuelve con más energía!',
-    'La memoria se consolida durante el descanso. 🧠 Cierra los ojos 2 minutos y respira profundo.',
-    '¡Ya llevas mucho rato! 💪 Estira el cuello, mueve los hombros y bebe agua antes de continuar.',
-    '¡Eres increíble! 🌟 Pero tu concentración necesita aire. Un descanso ahora vale 10 de después.',
-    '🏅 Récord de sesión. Recuerda: los campeones también descansan. ¡Vuelve renovado!',
+  // Mensajes por nivel — se personalizan con el nombre del usuario
+  const MSGS = [
+    { // 10 min — azul (normal)
+      icon: '☕',
+      title: (n) => `¡${n}, hora de una pausa!`,
+      tip: (n) => `Tu cerebro aprende mejor con descansos cortos, ${n}. 👀 Aparta la vista unos minutos — ¡vuelve con más energía!`,
+      skipBtn: 'Seguir jugando',
+      theme: { bg:'linear-gradient(160deg,#0c2a4a,#0f3460)', badge:'#0ea5e9', badgeBg:'rgba(14,165,233,.15)', glow:'rgba(56,189,248,.5)', dot:'#38bdf8' }
+    },
+    { // 20 min — naranja (alerta media)
+      icon: '🟠',
+      title: (n) => `¡${n}, llevas 20 minutos seguidos!`,
+      tip: (n) => `La memoria se consolida durante el descanso, ${n}. 🧠 Cierra los ojos 2 minutos y respira profundo — tu rendimiento te lo agradecerá.`,
+      skipBtn: 'Continuar de todas formas',
+      theme: { bg:'linear-gradient(160deg,#431407,#7c2d12)', badge:'#f97316', badgeBg:'rgba(249,115,22,.2)', glow:'rgba(249,115,22,.6)', dot:'#fb923c' }
+    },
+    { // 30 min — rojo (alerta alta)
+      icon: '🔴',
+      title: (n) => `¡${n}, tu concentración lo necesita!`,
+      tip: (n) => `Ya llevas media hora, ${n}. 💪 Estira el cuello, mueve los hombros y bebe agua — 5 minutos de descanso recargan 1 hora de aprendizaje.`,
+      skipBtn: 'Seguir (aunque no es recomendable)',
+      theme: { bg:'linear-gradient(160deg,#450a0a,#7f1d1d)', badge:'#ef4444', badgeBg:'rgba(239,68,68,.2)', glow:'rgba(239,68,68,.7)', dot:'#f87171' }
+    },
+    { // 40+ min — rojo intenso
+      icon: '⚠️',
+      title: (n) => `¡${n}, mereces un descanso real!`,
+      tip: (n) => `${n}, llevas mucho tiempo activo. 🌙 Los campeones también descansan — tu cerebro necesita consolidar todo lo que aprendiste hoy.`,
+      skipBtn: '😅 Seguir (de verdad, descansa luego)',
+      theme: { bg:'linear-gradient(160deg,#3b0764,#581c87)', badge:'#a855f7', badgeBg:'rgba(168,85,247,.2)', glow:'rgba(168,85,247,.7)', dot:'#c084fc' }
+    },
   ];
+
+  function getUserName(){
+    try{
+      const u = game && game.user;
+      if(!u) return 'Tutor';
+      return u.displayName?.split(' ')[0]
+        || u.email?.split('@')[0]
+        || 'Tutor';
+    }catch(e){ return 'Tutor'; }
+  }
 
   function formatTime(minutes){
     if(minutes < 60) return `${minutes} minuto${minutes>1?'s':''}`;
@@ -2897,7 +3617,7 @@ window.onresize=()=>{if(game.user){renderMap();centerCamera();}};
     return m > 0 ? `${h}h ${m}min` : `${h} hora${h>1?'s':''}`;
   }
 
-  function buildDots(count){
+  function buildDots(count, color){
     const el = document.getElementById('rest-dots');
     if(!el) return;
     el.innerHTML = '';
@@ -2905,6 +3625,7 @@ window.onresize=()=>{if(game.user){renderMap();centerCamera();}};
     for(let i=0;i<max;i++){
       const d = document.createElement('div');
       d.className = 'rest-dot active';
+      d.style.background = color;
       el.appendChild(d);
     }
   }
@@ -2913,46 +3634,52 @@ window.onresize=()=>{if(game.user){renderMap();centerCamera();}};
     _restCount++;
     const minutes = _restCount * 10;
     const timeStr = formatTime(minutes);
+    const name = getUserName();
+    const msgIdx = Math.min(_restCount - 1, MSGS.length - 1);
+    const msg = MSGS[msgIdx];
+    const theme = msg.theme;
 
-    const isLong = _restCount >= 3;
+    // Aplicar tema de color al modal
+    const card = document.querySelector('#modal-rest .rest-card');
+    if(card) card.style.background = theme.bg;
+
+    // Actualizar badge de tiempo con color del tema
+    const badge = document.getElementById('rest-time-badge');
+    if(badge){
+      badge.innerText = timeStr;
+      badge.style.color = theme.badge;
+      badge.style.background = theme.badgeBg;
+      badge.style.border = `1px solid ${theme.badge}`;
+    }
+
     const title = document.getElementById('rest-title');
     const subtitle = document.getElementById('rest-subtitle');
-    const badge = document.getElementById('rest-time-badge');
     const tip = document.getElementById('rest-tip');
     const skipBtn = document.getElementById('rest-skip-btn');
 
-    if(title) title.innerText = isLong ? '🌙 ¡Mereces un descanso real!' : '☕ ¡Hora de descansar!';
+    if(title){ title.innerText = msg.icon + ' ' + msg.title(name); title.style.color = theme.badge; }
     if(subtitle) subtitle.innerText = 'Llevas activo en Fatlin AI';
-    if(badge) badge.innerText = timeStr;
-    if(tip) tip.innerText = tips[Math.min(_restCount-1, tips.length-1)];
-    if(skipBtn) skipBtn.innerText = _restCount >= 4
-      ? '😅 Seguir (de verdad, descansa luego)'
-      : 'Seguir jugando de todas formas';
+    if(tip) tip.innerText = msg.tip(name);
+    if(skipBtn){ skipBtn.innerText = msg.skipBtn; skipBtn.style.borderColor = theme.badge; skipBtn.style.color = theme.badge; }
 
-    buildDots(_restCount);
+    buildDots(_restCount, theme.dot);
 
-    // Efecto emblema más intenso según tiempo
+    // Efecto glow del emblema según tema
     const emblem = document.querySelector('.rest-emblem-svg');
-    if(emblem){
-      const intensity = Math.min(_restCount * 8, 30);
-      emblem.style.filter = `drop-shadow(0 8px ${intensity}px rgba(56,189,248,${0.4 + _restCount*0.1}))`;
-    }
+    if(emblem) emblem.style.filter = `drop-shadow(0 8px 24px ${theme.glow})`;
 
     document.getElementById('modal-rest').classList.add('active');
   };
 
   window.closeRestModal = function(skip){
     document.getElementById('modal-rest').classList.remove('active');
-    // Si elige descansar, pausa el timer 5 min extra como gracia
-    // Si sigue jugando, el timer continúa normalmente
   };
 
   window.startRestTimer = function(){
-    if(_restInterval) return; // ya activo
+    if(_restInterval) return;
     _sessionStart = Date.now();
     _restInterval = setInterval(()=>{
-      // Solo mostrar si el juego está activo (no en splash, tiene usuario)
-      if(game && game.user && !document.getElementById('splash').style.display !== 'none'){
+      if(game && game.user && document.getElementById('splash').style.display === 'none'){
         window.showRestModal();
       }
     }, REST_INTERVAL_MS);
@@ -2964,5 +3691,16 @@ window.onresize=()=>{if(game.user){renderMap();centerCamera();}};
   };
 })();
 </script>
+
+<!-- ── OVERLAY MOMENTO DE CRUCE ─────────────────────────────── -->
+<div id="cruce-overlay">
+  <div class="cruce-line-flash"></div>
+  <div class="cruce-msg">
+    <span class="cruce-icon">🚀</span>
+    <div class="cruce-title" id="cruce-title">¡Cruzaste la Zona de Ascenso!</div>
+    <div class="cruce-sub" id="cruce-sub">Mantén tu posición esta semana<br>para recibir tu diploma el lunes.</div>
+  </div>
+</div>
+
 </body>
 </html>
