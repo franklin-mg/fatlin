@@ -54,6 +54,7 @@
          FUENTE
     ═══════════════════════════════════════════ -->
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 
     <!-- ═══════════════════════════════════════════
          ESTILOS (idénticos a la versión anterior)
@@ -374,81 +375,248 @@
         #stat-streak.visible { display:flex; }
         .shield-icon { font-size:.95rem; }
 
-        /* ═══════ MODAL DIPLOMA ═══════ */
+        /* ═══════ MODAL DIPLOMA — NUEVO DISEÑO PROFESIONAL ═══════ */
         #modal-diploma {
-            position:fixed;inset:0;background:rgba(0,0,0,.92);
-            backdrop-filter:blur(16px);z-index:5500;
-            display:none;align-items:center;justify-content:center;padding:16px;
+            position:fixed;inset:0;background:rgba(0,0,0,.94);
+            backdrop-filter:blur(20px);z-index:5500;
+            display:none;align-items:center;justify-content:center;
+            padding:12px;overflow-y:auto;
         }
         #modal-diploma.active { display:flex;animation:fadeIn .3s ease; }
+
+        /* Wrapper que contiene el cert + botones */
         .diploma-wrap {
-            background:white;border-radius:2rem;padding:0;
-            max-width:480px;width:100%;
-            box-shadow:0 40px 100px rgba(0,0,0,.7);
-            overflow:hidden;
+            display:flex;flex-direction:column;align-items:center;
+            gap:14px;width:100%;max-width:1060px;
         }
+
+        /* ── MARCO EXTERIOR — replica cert-frame ── */
         #diploma-content {
-            background: linear-gradient(160deg,#fffbeb 0%,#fef3c7 40%,#fffbeb 100%);
-            padding:2.5rem 2rem 1.5rem;
-            text-align:center;
-            border:8px solid transparent;
-            background-clip:padding-box;
-            position:relative;
+            width:100%;max-width:1024px;
+            aspect-ratio:4/3;
+            background:linear-gradient(145deg,#1a3a6a 0%,#0a1628 40%,#0e2848 100%);
+            border-radius:18px;padding:6px;
+            box-shadow:0 0 0 1px rgba(80,160,255,.2),0 0 70px rgba(0,120,255,.06),0 50px 140px rgba(0,0,0,.96);
+            position:relative;flex-shrink:0;
         }
         #diploma-content::before {
+            content:'';position:absolute;inset:0;border-radius:18px;
+            background:
+              radial-gradient(ellipse at 3% 3%,rgba(80,180,255,.14),transparent 38%),
+              radial-gradient(ellipse at 97% 97%,rgba(180,140,20,.07),transparent 38%);
+            pointer-events:none;z-index:0;
+        }
+
+        /* ── PAPEL INTERNO ── */
+        .cert-paper-inner {
+            width:100%;height:100%;
+            background:#f5f8ff;
+            border-radius:13px;border:1.5px solid #b0c8e8;
+            display:grid;grid-template-columns:1fr 22%;
+            overflow:hidden;position:relative;
+        }
+        .cert-paper-inner::before {
             content:'';position:absolute;inset:0;
-            background:linear-gradient(160deg,#f59e0b,#d97706,#92400e,#f59e0b);
-            z-index:-1;margin:-8px;border-radius:2rem;
+            background-image:repeating-linear-gradient(0deg,transparent,transparent 30px,rgba(0,40,100,.011) 30px,rgba(0,40,100,.011) 31px);
+            pointer-events:none;z-index:0;
         }
-        .diploma-border-inner {
-            border:3px double #d97706;
-            border-radius:1.25rem;
-            padding:1.5rem 1rem;
+        .cert-paper-inner::after {
+            content:'PACIE';
+            position:absolute;top:50%;left:36%;
+            transform:translate(-50%,-50%) rotate(-10deg);
+            font-family:Georgia,serif;font-size:9rem;font-weight:900;
+            color:rgba(0,80,180,.025);pointer-events:none;
+            letter-spacing:.12em;z-index:0;white-space:nowrap;
         }
-        .diploma-seal {
-            width:80px;height:80px;
-            background:linear-gradient(135deg,#f59e0b,#d97706);
-            border-radius:50%;
+
+        /* ── COLUMNA PRINCIPAL ── */
+        .cert-col-main {
+            padding:2% 2.5% 1.8% 2.8%;
+            display:flex;flex-direction:column;justify-content:space-between;
+            border-right:1px solid #d8e8f8;position:relative;z-index:1;height:100%;
+        }
+        .cert-col-main::before {
+            content:'';position:absolute;
+            left:0;top:14px;bottom:14px;width:4px;
+            background:linear-gradient(180deg,transparent,#2d7dd2 20%,#00c8ff 50%,#2d7dd2 80%,transparent);
+            border-radius:2px;
+        }
+
+        /* Cabecera */
+        .cer-head { display:flex;align-items:flex-start;gap:1.2%; }
+        .cer-head-text { flex:1; }
+        .cer-issuer {
+            font-size:.42rem;font-weight:700;letter-spacing:.18em;
+            text-transform:uppercase;color:#4a6080;margin-bottom:2px;
+        }
+        .cer-title {
+            font-family:Georgia,serif;font-size:1.25rem;font-weight:900;
+            color:#080f20;line-height:1.1;
+        }
+        .cer-subtitle {
+            font-size:.43rem;letter-spacing:.14em;
+            text-transform:uppercase;color:#4a6080;margin-top:3px;
+        }
+        .cer-chip {
+            display:inline-flex;align-items:center;gap:4px;
+            margin-top:5px;padding:2px 10px;
+            background:linear-gradient(135deg,rgba(0,180,255,.1),rgba(0,80,200,.06));
+            border:1px solid rgba(0,130,255,.28);border-radius:20px;
+            font-size:.44rem;font-weight:800;letter-spacing:.07em;
+            text-transform:uppercase;color:#0055a0;
+        }
+        .cer-rule {
+            height:1px;margin:8px 0 0;
+            background:linear-gradient(90deg,transparent,#b0c8e8,transparent);
+        }
+
+        /* Sección media */
+        .cer-mid {
+            flex:1;display:flex;flex-direction:column;justify-content:space-between;
+            padding:2.5% 0 1.5%;
+        }
+
+        /* Nombre */
+        .cer-name-box {
+            text-align:center;padding:1% 4% 1.2%;
+            background:linear-gradient(135deg,rgba(0,80,180,.04),rgba(0,120,255,.02));
+            border-radius:10px;border:1px solid rgba(0,100,200,.1);
+        }
+        .cer-certify-lbl { font-size:.65rem;color:#4a6080;margin-bottom:4px;font-style:italic; }
+        .cer-graduate-name {
+            font-family:Georgia,serif;font-size:1.75rem;font-weight:900;
+            color:#080f20;line-height:1.1;display:block;
+        }
+        .cer-name-role {
+            font-size:.6rem;color:#4a6080;margin-top:4px;
+            letter-spacing:.09em;text-transform:uppercase;font-weight:600;
+        }
+
+        /* Logro */
+        .cer-achievement {
+            font-size:.73rem;color:#253040;line-height:1.6;text-align:justify;padding:2px 0;
+        }
+        .cer-achievement strong { color:#003a80;font-weight:700; }
+
+        /* Contenidos */
+        .cer-contents-hdr {
+            display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;
+        }
+        .cer-contents-lbl {
+            font-size:.52rem;font-weight:800;letter-spacing:.13em;
+            text-transform:uppercase;color:#4a6080;
+            display:flex;align-items:center;gap:5px;
+        }
+        .cer-contents-lbl::before {
+            content:'';display:inline-block;width:3px;height:9px;
+            background:linear-gradient(180deg,#00c8ff,#0055a0);border-radius:2px;
+        }
+        .cer-contents-badge {
+            font-size:.52rem;font-weight:700;background:#dbeafe;color:#1e40af;
+            border:1px solid #bfdbfe;border-radius:20px;padding:2px 8px;
+        }
+        .cer-topics-grid {
+            display:grid;grid-template-columns:1fr 1fr;gap:1px 10px;
+        }
+        .cer-topic-row {
+            display:flex;align-items:center;gap:4px;
+            padding:3px 0;border-bottom:1px solid rgba(0,60,120,.07);
+        }
+        .cer-topic-row:nth-last-child(-n+2){border-bottom:none;}
+        .cer-topic-check {
+            width:13px;height:13px;flex-shrink:0;
+            background:#dcfce7;border:1px solid #86efac;border-radius:3px;
             display:flex;align-items:center;justify-content:center;
-            font-size:2.2rem;
-            margin:0 auto .75rem;
-            box-shadow:0 4px 20px rgba(245,158,11,.5);
-            border:4px solid #92400e;
+            font-size:7px;color:#16a34a;font-weight:900;
         }
-        .diploma-title {
-            font-size:1.05rem;font-weight:800;color:#78350f;
-            text-transform:uppercase;letter-spacing:.2em;margin-bottom:.25rem;
+        .cer-topic-num {
+            font-family:monospace;font-size:.5rem;font-weight:700;
+            color:#90aac8;flex-shrink:0;width:16px;
         }
-        .diploma-subtitle {
-            font-size:.65rem;color:#92400e;font-weight:700;
-            text-transform:uppercase;letter-spacing:.3em;margin-bottom:1rem;
+        .cer-topic-name { font-size:.68rem;font-weight:600;color:#0d1e36;line-height:1.3;flex:1; }
+
+        /* Pie */
+        .cer-foot {
+            padding-top:8px;border-top:1px solid #d8e8f8;
+            display:flex;align-items:flex-end;justify-content:space-between;gap:8px;
         }
-        .diploma-certify {
-            font-size:.75rem;color:#78350f;margin-bottom:.5rem;
+        .cer-orgs { display:flex;align-items:flex-end;justify-content:space-between;width:100%; }
+        .cer-org { display:flex;flex-direction:column;align-items:center;gap:3px;text-align:center; }
+        .cer-org-img {
+            width:48px;height:48px;background:white;border:1.5px solid #b0c8e8;
+            border-radius:8px;overflow:hidden;display:flex;align-items:center;
+            justify-content:center;box-shadow:0 2px 8px rgba(0,40,100,.1);
         }
-        .diploma-name {
-            font-size:1.6rem;font-weight:800;
-            color:#1e0a3c;margin:.5rem 0;
-            border-bottom:2px solid #d97706;
-            padding-bottom:.5rem;display:inline-block;min-width:200px;
+        .cer-org-img img { width:100%;height:100%;object-fit:contain;padding:3px; }
+        .cer-org-name { font-size:.58rem;font-weight:800;color:#0d1e36;letter-spacing:.04em;text-transform:uppercase; }
+        .cer-org-sub  { font-size:.5rem;color:#4a6080;letter-spacing:.06em;text-transform:uppercase; }
+        .cer-org-div  { width:1px;height:28px;align-self:center;background:linear-gradient(180deg,transparent,#b0c8e8,transparent); }
+        .cer-meta { display:flex;flex-direction:column;align-items:flex-end;gap:3px;flex-shrink:0; }
+        .cer-date     { font-size:.58rem;font-weight:700;color:#0d1e36; }
+        .cer-date-sub { font-size:.43rem;color:#4a6080; }
+        .cer-sha {
+            font-family:monospace;font-size:.46rem;font-weight:700;
+            color:#003880;background:#dbeafe;border:1px solid #bfdbfe;
+            border-radius:4px;padding:2px 7px;letter-spacing:.04em;margin-top:2px;
         }
-        .diploma-level {
-            font-size:1rem;font-weight:700;color:#0369a1;margin:.5rem 0;
+
+        /* ── COLUMNA DERECHA ── */
+        .cert-col-side {
+            display:flex;flex-direction:column;align-items:center;
+            justify-content:center;padding:1.6% 1.3%;gap:1%;
+            background:linear-gradient(180deg,rgba(0,80,180,.05) 0%,rgba(0,120,255,.02) 100%);
+            position:relative;z-index:1;
         }
-        .diploma-date {
-            font-size:.7rem;color:#92400e;margin-top:.5rem;
+        .cer-side-tier {
+            font-size:.44rem;font-weight:800;letter-spacing:.13em;text-transform:uppercase;
+            padding:3px 12px;border-radius:20px;
+            background:linear-gradient(135deg,#003880,#001840);color:#67b8f0;
+            box-shadow:0 3px 12px rgba(0,50,140,.4);text-align:center;
         }
-        .diploma-logos {
-            display:flex;align-items:center;justify-content:center;
-            gap:1.5rem;margin-top:1rem;padding-top:.75rem;
-            border-top:1px solid #d97706;
+        .cer-scan-lbl {
+            font-size:.44rem;font-weight:600;letter-spacing:.1em;
+            text-transform:uppercase;color:#9ca3af;text-align:center;line-height:1.5;
         }
-        .diploma-sig {
-            font-size:.65rem;color:#78350f;font-weight:700;
-            text-transform:uppercase;letter-spacing:.1em;
+        .cer-qr-box {
+            background:white;border:2px solid #b0c8e8;border-radius:9px;padding:6px;
+            width:26%;aspect-ratio:1;display:flex;align-items:center;justify-content:center;
+            flex-shrink:0;box-shadow:0 4px 16px rgba(0,50,120,.1);
         }
+        .cer-id-box {
+            font-family:monospace;font-size:.4rem;color:#4a6080;
+            text-align:center;word-break:break-all;
+            background:rgba(0,50,100,.03);border:1px solid rgba(0,70,150,.1);
+            border-radius:6px;padding:4px 6px;line-height:1.65;width:100%;
+        }
+        .cer-id-box strong {
+            display:block;font-size:.36rem;color:#9ca3af;
+            font-weight:700;letter-spacing:.1em;text-transform:uppercase;margin-bottom:2px;
+        }
+        .cer-stats { width:100%;display:flex;flex-direction:column;gap:3px; }
+        .cer-stat {
+            display:flex;justify-content:space-between;align-items:center;
+            padding:3px 7px;background:white;border:1px solid #d8e8f8;border-radius:6px;
+        }
+        .cer-stat-lbl { font-size:.42rem;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:.07em; }
+        .cer-stat-val { font-size:.56rem;font-weight:800;color:#080f20;font-family:monospace; }
+        .cer-cycle { width:100%;background:rgba(0,60,140,.03);border:1px solid rgba(0,80,180,.1);border-radius:8px;padding:5px 8px; }
+        .cer-cycle-hdr { font-size:.4rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:#4a6080;margin-bottom:4px;text-align:center; }
+        .cer-cycle-rows { display:flex;flex-direction:column;gap:3px; }
+        .cer-cycle-row { display:flex;align-items:center;gap:4px; }
+        .cer-cycle-lbl { font-family:monospace;font-size:.38rem;font-weight:700;color:#9ca3af;width:26px;flex-shrink:0; }
+        .cer-cycle-track { flex:1;height:5px;background:#e4edf8;border-radius:3px;overflow:hidden; }
+        .cer-cycle-fill { height:100%;border-radius:3px; }
+        .cer-cycle-pct { font-family:monospace;font-size:.38rem;font-weight:700;color:#374151;width:24px;text-align:right; }
+        .cer-valid {
+            display:flex;align-items:center;gap:5px;padding:3px 10px;border-radius:20px;
+            background:#f0fdf4;border:1px solid #86efac;font-size:.46rem;font-weight:700;color:#15803d;
+        }
+        .cer-vdot { width:6px;height:6px;border-radius:50%;background:#16a34a;flex-shrink:0;animation:certPulse 2s ease-in-out infinite; }
+        @keyframes certPulse{0%,100%{box-shadow:0 0 0 0 rgba(22,163,74,.5)}50%{box-shadow:0 0 0 5px rgba(22,163,74,0)}}
+
+        /* Botones acción */
         .diploma-actions {
-            padding:1rem 1.5rem;display:flex;gap:.75rem;
+            display:flex;gap:.75rem;width:100%;max-width:1024px;
         }
 
         /* ═══════ MODAL TIENDA (comprar escudos) ═══════ */
@@ -1590,40 +1758,167 @@
     </div>
 </div>
 
-<!-- MODAL DIPLOMA -->
+<!-- MODAL DIPLOMA — nuevo diseño profesional -->
 <div id="modal-diploma">
-    <div class="diploma-wrap">
-        <div id="diploma-content">
-            <div class="diploma-border-inner">
-                <div class="diploma-seal">🏅</div>
-                <p class="diploma-title" data-i18n="diploma_title">Certificado de Logro</p>
-                <p class="diploma-subtitle" data-i18n="diploma_org">Fatlin AI · Metodología PACIE</p>
-                <p class="diploma-certify" data-i18n="diploma_certify">Se certifica que</p>
-                <p class="diploma-name" id="dip-name">Nombre del Usuario</p>
-                <p class="diploma-level" id="dip-level" data-i18n="diploma_level">ha completado 50 niveles de la metodología PACIE</p>
-                <p class="diploma-certify" style="margin-top:.75rem;font-size:.7rem">demostrando dominio en las fases de Presencia, Alcance,<br>Capacitación, Interacción y E-learning</p>
-                <div class="diploma-logos">
-                    <div style="text-align:center">
-                        <svg width="36" height="36" viewBox="0 0 100 100"><path d="M50 90 L85 75 L50 60 L15 75 Z" fill="#0369a1"/><path d="M50 80 L85 65 L50 50 L15 65 Z" fill="#0284c7"/><path d="M50 70 L85 55 L50 40 L15 55 Z" fill="#0ea5e9"/><path d="M50 60 L85 45 L50 30 L15 45 Z" fill="#38bdf8"/><path d="M50 52 L72 41 L50 30 L28 41 Z" fill="#7dd3fc"/></svg>
-                        <p class="diploma-sig">Fatlin AI</p>
-                    </div>
-                    <div style="text-align:center">
-                        <div style="font-size:1.5rem">🎓</div>
-                        <p class="diploma-sig">FATLA · PACIE</p>
-                    </div>
-                    <div style="text-align:center">
-                        <div style="font-size:1.5rem">🌐</div>
-                        <p class="diploma-sig">ASOMTV</p>
-                    </div>
-                </div>
-                <p class="diploma-date" id="dip-date"></p>
-            </div>
+ <div class="diploma-wrap">
+
+  <!-- ═══ CERTIFICADO (marco azul oscuro + papel interno) ═══ -->
+  <div id="diploma-content">
+   <div class="cert-paper-inner">
+
+    <!-- ══ COLUMNA PRINCIPAL ══ -->
+    <div class="cert-col-main">
+
+     <!-- CABECERA -->
+     <div>
+      <div class="cer-head">
+       <!-- Sello dinámico (se inyecta por JS) -->
+       <div id="dip-seal-wrap" style="flex-shrink:0;"></div>
+       <div class="cer-head-text">
+        <p class="cer-issuer">Certificado oficial · Metodología PACIE · Educación Virtual Gamificada con IA</p>
+        <h1 class="cer-title" id="dip-cert-title">Certificado de Logro PACIE</h1>
+        <p class="cer-subtitle" id="dip-cert-subtitle">Acreditación Micro-curricular · Fatlin AI</p>
+        <div class="cer-chip" id="dip-chip">💎 Diamante &nbsp;·&nbsp; 250 Niveles</div>
+       </div>
+      </div>
+      <div class="cer-rule"></div>
+     </div>
+
+     <!-- SECCIÓN MEDIA -->
+     <div class="cer-mid">
+
+      <!-- Nombre -->
+      <div class="cer-name-box">
+       <p class="cer-certify-lbl">Este certificado acredita que ha completado satisfactoriamente</p>
+       <span class="cer-graduate-name" id="dip-name">Nombre del Usuario</span>
+       <p class="cer-name-role" id="dip-name-role">Nivel PACIE · Fatlin AI</p>
+      </div>
+
+      <!-- Logro -->
+      <p class="cer-achievement" id="dip-achievement">
+       Ha completado niveles de evaluación continua con Inteligencia Artificial sobre los contenidos
+       oficiales de la Metodología PACIE, acreditando módulos progresivos con mínimo 4 respuestas
+       correctas consecutivas por nivel, validado por FATLA, PACIE y ASOMTV.
+      </p>
+
+      <!-- Contenidos académicos -->
+      <div>
+       <div class="cer-contents-hdr">
+        <span class="cer-contents-lbl">Contenidos Académicos Acreditados</span>
+        <span class="cer-contents-badge" id="dip-modules-badge">Módulos ✅</span>
+       </div>
+       <div class="cer-topics-grid" id="dip-topics-grid">
+        <!-- se inyecta por JS según el tier -->
+       </div>
+      </div>
+
+     </div><!-- /cer-mid -->
+
+     <!-- PIE -->
+     <div>
+      <div class="cer-foot">
+       <div class="cer-orgs">
+
+        <!-- FATLA -->
+        <div class="cer-org">
+         <div class="cer-org-img">
+          <img src="https://www.fatla.net/mega/imacorp/2025/logos/planeta-fatla.png"
+               onerror="if(this._err)return;this._err=true;var p=this.parentElement;if(p)p.innerHTML='<svg viewBox=\'0 0 100 100\' style=\'width:80%;padding:4px\'><path d=\'M50 88 L82 70 L50 52 L18 70 Z\' fill=\'#0369a1\'/><path d=\'M50 79 L82 61 L50 43 L18 61 Z\' fill=\'#0284c7\'/><path d=\'M50 70 L82 52 L50 34 L18 52 Z\' fill=\'#0ea5e9\'/></svg>'" alt="FATLA">
+         </div>
+         <span class="cer-org-name">FATLA</span>
+         <span class="cer-org-sub">Fundación</span>
         </div>
-        <div class="diploma-actions">
-            <button id="btn-dip-print" class="wbtn primary" style="margin:0" data-i18n="diploma_print">🖨️ Imprimir / Guardar PDF</button>
-            <button id="btn-dip-close" class="wbtn slate" style="margin:0;flex:0 0 auto;padding:.9rem 1.2rem">✕</button>
+        <div class="cer-org-div"></div>
+
+        <!-- PACIE -->
+        <div class="cer-org">
+         <div class="cer-org-img">
+          <img src="https://www.pacie.education/mega/pacie/logos/pacie-logo-oficial.png"
+               onerror="if(this._err)return;this._err=true;var p=this.parentElement;if(p)p.innerHTML='<span style=\'font-size:1.5rem\'>🎓</span>'" alt="PACIE">
+         </div>
+         <span class="cer-org-name">PACIE</span>
+         <span class="cer-org-sub">Metodología</span>
         </div>
-    </div>
+        <div class="cer-org-div"></div>
+
+        <!-- ASOMTV -->
+        <div class="cer-org">
+         <div class="cer-org-img">
+          <img src="https://asomtv.org/mega/imacorp/2023/images/logo-asomtv.png"
+               onerror="if(this._err)return;this._err=true;var p=this.parentElement;if(p)p.innerHTML='<span style=\'font-size:1.5rem\'>🌐</span>'" alt="ASOMTV">
+         </div>
+         <span class="cer-org-name">ASOMTV</span>
+         <span class="cer-org-sub">Asociación</span>
+        </div>
+        <div class="cer-org-div"></div>
+
+        <!-- Fatlin AI SVG -->
+        <div class="cer-org">
+         <div class="cer-org-img" style="background:white;">
+          <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%;padding:4px">
+           <defs><filter id="flglow2"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter></defs>
+           <path d="M50 88 L82 70 L50 52 L18 70 Z" fill="#0369a1"/>
+           <path d="M50 79 L82 61 L50 43 L18 61 Z" fill="#0284c7"/>
+           <path d="M50 70 L82 52 L50 34 L18 52 Z" fill="#0ea5e9"/>
+           <path d="M50 61 L82 43 L50 25 L18 43 Z" fill="#38bdf8"/>
+           <path d="M50 52 L70 42 L50 32 L30 42 Z" fill="#7dd3fc" filter="url(#flglow2)"/>
+           <circle cx="50" cy="42" r="5" fill="white" opacity=".95"/>
+          </svg>
+         </div>
+         <span class="cer-org-name">Fatlin AI</span>
+         <span class="cer-org-sub">Plataforma</span>
+        </div>
+
+       </div><!-- /cer-orgs -->
+
+       <!-- Fecha + SHA -->
+       <div class="cer-meta">
+        <span class="cer-date" id="dip-date">—</span>
+        <span class="cer-date-sub">Fecha de emisión del certificado</span>
+        <span class="cer-sha" id="dip-sha">SHA · FATLIN-ID</span>
+       </div>
+
+      </div>
+     </div><!-- /sección pie -->
+
+    </div><!-- /cert-col-main -->
+
+    <!-- ══ COLUMNA DERECHA ══ -->
+    <div class="cert-col-side">
+     <div class="cer-side-tier" id="dip-side-tier">💎 DIAMANTE</div>
+     <p class="cer-scan-lbl">Escanea para<br>verificar autenticidad</p>
+     <div class="cer-qr-box" id="dip-qr-container">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:100%">
+       <rect width="120" height="120" fill="white"/>
+       <text x="60" y="65" text-anchor="middle" font-size="9" fill="#9ca3af">QR al emitir</text>
+      </svg>
+     </div>
+     <div class="cer-id-box"><strong>ID del Certificado</strong><span id="dip-cert-id">FATLIN-ID</span></div>
+     <div class="cer-stats">
+      <div class="cer-stat"><span class="cer-stat-lbl">Niveles</span>  <span class="cer-stat-val" id="dip-stat-levels">— ✅</span></div>
+      <div class="cer-stat"><span class="cer-stat-lbl">Módulos</span>  <span class="cer-stat-val" id="dip-stat-modules">—</span></div>
+      <div class="cer-stat"><span class="cer-stat-lbl">Preguntas</span><span class="cer-stat-val" id="dip-stat-questions">—</span></div>
+      <div class="cer-stat"><span class="cer-stat-lbl">Precisión</span><span class="cer-stat-val">≥ 80%</span></div>
+     </div>
+     <div class="cer-cycle">
+      <p class="cer-cycle-hdr">Progresión de Ciclos</p>
+      <div class="cer-cycle-rows" id="dip-cycle-rows">
+       <!-- se inyecta por JS -->
+      </div>
+     </div>
+     <div class="cer-valid"><div class="cer-vdot"></div>Certificado válido</div>
+    </div><!-- /cert-col-side -->
+
+   </div><!-- /cert-paper-inner -->
+  </div><!-- /diploma-content -->
+
+  <!-- Botones -->
+  <div class="diploma-actions">
+   <button id="btn-dip-print" class="wbtn primary" style="margin:0" data-i18n="diploma_print">🖨️ Imprimir / Guardar PDF</button>
+   <button id="btn-dip-close" class="wbtn slate" style="margin:0;flex:0 0 auto;padding:.9rem 1.2rem">✕</button>
+  </div>
+
+ </div><!-- /diploma-wrap -->
 </div>
 
 <!-- MODAL TIENDA -->
@@ -2660,12 +2955,19 @@ function showLigaTip(text){
 }
 
 function generateDiplomaLiga(liga){
-  const el = n => document.getElementById(n);
-  if(!el('modal-diploma')) return;
-  if(el('dip-name')) el('dip-name').innerText = game.user?.displayName || game.user?.email?.split('@')[0] || 'Tutor';
-  if(el('dip-level')) el('dip-level').innerText = liga.escudo + ' ' + liga.nombre;
-  if(el('dip-date')) el('dip-date').innerText = new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'});
-  el('modal-diploma').classList.add('active');
+  const elById = n => document.getElementById(n);
+  if(!elById('modal-diploma')) return;
+  const name = game.user?.displayName || game.user?.email?.split('@')[0] || 'Tutor';
+  const date = new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'});
+  if(elById('dip-name')) elById('dip-name').textContent = name;
+  if(elById('dip-name-role')) elById('dip-name-role').textContent = liga.escudo + ' ' + liga.nombre + ' · Liga PACIE';
+  if(elById('dip-cert-title')) elById('dip-cert-title').textContent = 'Certificado de Liga PACIE';
+  if(elById('dip-cert-subtitle')) elById('dip-cert-subtitle').textContent = 'Ascenso de Liga · ' + liga.nombre;
+  if(elById('dip-chip')) elById('dip-chip').textContent = liga.escudo + ' Liga ' + liga.nombre;
+  if(elById('dip-side-tier')) elById('dip-side-tier').textContent = liga.escudo + ' ' + liga.nombre;
+  if(elById('dip-date')) elById('dip-date').textContent = date;
+  if(elById('dip-achievement')) elById('dip-achievement').innerHTML = `Ha ascendido a la liga <strong>${liga.nombre}</strong> en Fatlin AI, demostrando dominio progresivo de la Metodología PACIE y constancia semanal en las evaluaciones gamificadas con Inteligencia Artificial.`;
+  elById('modal-diploma').classList.add('active');
 }
 
 // ── ONBOARDING ────────────────────────────────────────────────────
@@ -2844,7 +3146,7 @@ function setAvatarEl(el){
   if(photo){
     el.classList.add('has-photo');
     el.innerHTML = `<img src="${photo}" alt="avatar"
-      onerror="this.parentElement.classList.remove('has-photo');this.parentElement.textContent='🧑';">`;
+      onerror="if(this._err)return;this._err=true;var p=this.parentElement;if(p){p.classList.remove('has-photo');p.textContent='🧑';}">`;
   } else {
     el.classList.remove('has-photo');
     el.textContent = selectedAvatar || '🧑';
@@ -2856,7 +3158,7 @@ function getAvatarHTML(avatarVal, sizePx){
   if(avatarVal && avatarVal.startsWith('http')){
     return `<img src="${avatarVal}" alt="av"
       style="width:${sizePx}px;height:${sizePx}px;border-radius:50%;object-fit:cover;vertical-align:middle;"
-      onerror="this.outerHTML='🧑'">`;
+      onerror="if(this._err)return;this._err=true;try{this.outerHTML='🧑';}catch(e){}">`;
   }
   return `<span style="font-size:${Math.round(sizePx*.85)}px">${avatarVal||'🧑'}</span>`;
 }
@@ -3332,36 +3634,35 @@ window.openLogros = function openLogros(){
   document.getElementById('logros-name').textContent = game.user?.displayName || game.user?.email?.split('@')[0] || 'Usuario';
   document.getElementById('logros-level').textContent = 'Nivel ' + game.level + ' · ' + game.stars + ' ⭐';
 
-  // Insignias — basadas en REWARDS (cada 10 niveles)
+  // Insignias — solo mostrar las ganadas
   const badgesGrid = document.getElementById('logros-badges-grid');
   badgesGrid.innerHTML = '';
   const earnedCount = game.badges || 0;
-  REWARDS.forEach((r, idx) => {
-    const earned = idx < earnedCount;
-    const div = document.createElement('div');
-    div.className = 'logro-item ' + (earned ? 'earned' : 'locked');
-    div.innerHTML = `<span class="logro-emoji">${r.badge.split(' ')[0]}</span>
-      <span class="logro-label">${r.badge.replace(/^[^ ]+ /,'')}</span>
-      <span style="font-size:.65rem;color:#6b7280;display:block;margin-top:3px">${r.msg}</span>`;
-    badgesGrid.appendChild(div);
-  });
-  if(earnedCount === 0){
+  const earnedBadges = REWARDS.slice(0, earnedCount);
+  if(earnedBadges.length > 0){
+    earnedBadges.forEach((r, idx) => {
+      const div = document.createElement('div');
+      div.className = 'logro-item earned';
+      div.innerHTML = `<span class="logro-emoji">${r.badge.split(' ')[0]}</span>
+        <span class="logro-label">${r.badge.replace(/^[^ ]+ /,'')}</span>
+        <span style="font-size:.65rem;color:#6b7280;display:block;margin-top:3px">${r.msg}</span>`;
+      badgesGrid.appendChild(div);
+    });
+  } else {
     badgesGrid.innerHTML = '<div class="no-logros" style="grid-column:span 2">Aún no tienes insignias.<br>¡Completa 10 niveles para ganar la primera!</div>';
   }
 
-  // Diplomas
+  // Diplomas — solo mostrar los ganados, con botón para ver/imprimir
   const diplomasList = document.getElementById('logros-diplomas-list');
   diplomasList.innerHTML = '';
-  // Diplomas: mismos tiers que checkMilestones
   const diplomaTiers = [
-    {min:50,  emoji:'🥇', title:'Diploma Fundamentos PACIE',  sub:'Completaste 50 niveles'},
-    {min:100, emoji:'💎', title:'Diploma Practicante PACIE',  sub:'Completaste 100 niveles'},
-    {min:150, emoji:'🚀', title:'Diploma Experto PACIE',      sub:'Completaste 150 niveles'},
-    {min:200, emoji:'👑', title:'Diploma Máster PACIE',       sub:'Completaste 200 niveles'},
-    {min:250, emoji:'🌟', title:'Diploma Élite PACIE',        sub:'Completaste 250 niveles'},
-    {min:300, emoji:'🏛️', title:'Diploma Gran Maestro PACIE', sub:'Completaste 300 niveles'},
+    {min:50,  emoji:'🥉', title:'Diploma Fundamentos PACIE',  sub:'Completaste 50 niveles'},
+    {min:100, emoji:'🥈', title:'Diploma Practicante PACIE',  sub:'Completaste 100 niveles'},
+    {min:150, emoji:'🥇', title:'Diploma Experto PACIE',      sub:'Completaste 150 niveles'},
+    {min:200, emoji:'✦',  title:'Diploma Máster PACIE',       sub:'Completaste 200 niveles'},
+    {min:250, emoji:'💎', title:'Diploma Élite PACIE',        sub:'Completaste 250 niveles'},
+    {min:300, emoji:'🔴', title:'Diploma Gran Maestro PACIE', sub:'Completaste 300 niveles'},
   ];
-  // Diploma ganado cuando level > min (pasó ese hito)
   const earned = diplomaTiers.filter(d => game.level > d.min);
   if(earned.length > 0){
     earned.forEach(d => {
@@ -3372,7 +3673,10 @@ window.openLogros = function openLogros(){
           <div class="diploma-title">${d.title}</div>
           <div class="diploma-sub">${d.sub}</div>
         </div>
-        <span style="color:#059669;font-size:1.2rem">✅</span>`;
+        <button onclick="document.getElementById('modal-logros').classList.remove('active');setTimeout(()=>generateDiploma(${d.min}),200);"
+          style="background:#0284c7;color:white;border:none;border-radius:10px;padding:5px 10px;font-size:.7rem;font-weight:700;cursor:pointer;flex-shrink:0;">
+          🖨️ Ver
+        </button>`;
       diplomasList.appendChild(div);
     });
   } else {
@@ -3395,7 +3699,7 @@ window.openAvatarPicker = function openAvatarPicker(){
     gRow.className = 'av-google-opt' + (selectedAvatar === gPhoto ? ' selected' : '');
     gRow.innerHTML = `
       <img src="${gPhoto}" alt="Foto Google"
-        onerror="this.parentElement.style.display='none'">
+        onerror="if(this._err)return;this._err=true;var p=this.parentElement;if(p)p.style.display='none'">
       <div class="av-google-opt-info">
         <div class="av-google-opt-label">📷 Usar foto de Google</div>
         <div class="av-google-opt-sub">Tu foto de perfil actual</div>
@@ -3613,52 +3917,132 @@ function generateDiploma(completedLevel){
   const name = game.user?.displayName || game.user?.email?.split('@')[0] || 'Estudiante';
   const date = new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'});
 
-  // Actualizar contenido textual
-  document.getElementById('dip-name').innerText = name;
-  document.getElementById('dip-level').innerText =
-    `ha completado ${completedLevel} niveles · ${tier.title}`;
-  document.getElementById('dip-date').innerText =
-    `${t('diploma_issued')} ${date} · Fatlin AI v1`;
+  // ── Datos según tier ──
+  const tierData = {
+    50:  { label:'🥉 BRONCE · FUNDAMENTOS',  cycles:1, modules:10,  questions:'≥200',  cyclePcts:[100,0,0,0,0],    sideTier:'🥉 BRONCE · FUNDAMENTOS PACIE',   certTitle:'Certificado Fundamentos PACIE',   chipText:'🥉 Bronce · 50 Niveles · 10 Módulos · 2 Ciclos' },
+    100: { label:'🥈 PLATA · PRACTICANTE',   cycles:2, modules:20,  questions:'≥400',  cyclePcts:[100,100,0,0,0],  sideTier:'🥈 PLATA · PRACTICANTE PACIE',    certTitle:'Certificado Practicante PACIE',   chipText:'🥈 Plata · 100 Niveles · 20 Módulos · 4 Ciclos' },
+    150: { label:'🥇 ORO · EXPERTO',         cycles:3, modules:30,  questions:'≥600',  cyclePcts:[100,100,100,0,0],sideTier:'🥇 ORO · EXPERTO PACIE',           certTitle:'Certificado Experto PACIE',       chipText:'🥇 Oro · 150 Niveles · 30 Módulos · 6 Ciclos' },
+    200: { label:'✦ PLATINO · MÁSTER',        cycles:4, modules:40,  questions:'≥800',  cyclePcts:[100,100,100,100,0],sideTier:'✦ PLATINO · MÁSTER PACIE',      certTitle:'Certificado Máster PACIE',        chipText:'✦ Platino · 200 Niveles · 40 Módulos · 8 Ciclos' },
+    250: { label:'💎 DIAMANTE · MENTOR',      cycles:5, modules:50,  questions:'≥1000', cyclePcts:[100,100,100,100,100],sideTier:'💎 DIAMANTE · MENTOR PACIE',   certTitle:'Certificado Mentor PACIE',        chipText:'💎 Diamante · 250 Niveles · 50 Módulos · 10 Ciclos' },
+    300: { label:'🔴 GEMA ROJA · GRAN MAESTRO',cycles:6,modules:60,  questions:'≥1200', cyclePcts:[100,100,100,100,100],sideTier:'🔴 GRAN MAESTRO PACIE',        certTitle:'Certificado Gran Maestro PACIE',  chipText:'🔴 Gema Roja · 300 Niveles · 60 Módulos · 12 Ciclos' },
+  };
+  const td = tierData[completedLevel] || tierData[250];
 
-  // Reemplazar el sello por SVG del tier
-  const sealEl = document.querySelector('.diploma-seal');
-  if(sealEl){
-    sealEl.innerHTML = buildDiplomaSealSVG(tier, 96);
-    sealEl.style.background = 'transparent';
-    sealEl.style.boxShadow  = 'none';
-    sealEl.style.width  = '100px';
-    sealEl.style.height = '100px';
+  // ── Generar ID único ──
+  const shortName = name.split(' ').map(w=>w[0]).join('').toUpperCase().substring(0,4);
+  const year = new Date().getFullYear();
+  const rand = Math.random().toString(36).substring(2,7).toUpperCase();
+  const tierInitial = (tier.label.match(/[A-Z]/g)||['X'])[0];
+  const certId = `FATLIN-${year}-${shortName}${completedLevel}${tierInitial}-${rand}`;
+
+  // ── Texto del logro ──
+  const achievementText = `Ha completado <strong>${completedLevel} niveles de evaluación continua con Inteligencia Artificial</strong>
+   sobre los contenidos oficiales de la Metodología PACIE, acreditando
+   <strong>${td.modules} módulos en ${td.cycles} ciclos progresivos</strong> con mínimo 4 respuestas
+   correctas consecutivas por nivel, validado por FATLA, PACIE y ASOMTV.`;
+
+  // ── Temas por tier (hasta 12 mostrados en 2 columnas) ──
+  const ALL_TOPICS = [
+    'Fundamentos y filosofía completa de PACIE',
+    'Fase Presencia: imagen, motivación y entornos',
+    'Fase Alcance: objetivos, estándares y competencias',
+    'Fase Capacitación: formación y tecnología docente',
+    'Fase Interacción: aprendizaje colaborativo y LMS',
+    'Fase E-learning: LMS, madurez y ecosistemas',
+    'Origen PACIE: Pedro Camacho, FATLA e historia',
+    'Educación virtual vs. presencial: modelos comparados',
+    'Herramientas tecnológicas e integración pedagógica',
+    'Evaluación, roles tutor–estudiante y gestión aula',
+    'Proyectos FATLA–ASOMTV: implementación real',
+    'Integración total PACIE: liderazgo y mentoría',
+  ];
+  const topicsCount = Math.min(12, Math.max(6, Math.ceil(completedLevel / 25)));
+  const topics = ALL_TOPICS.slice(0, topicsCount);
+
+  // ── Ciclos ──
+  const cycleColors = [
+    'linear-gradient(90deg,#f59e0b,#d97706)',
+    'linear-gradient(90deg,#3b82f6,#1d4ed8)',
+    'linear-gradient(90deg,#a855f7,#7e22ce)',
+    'linear-gradient(90deg,#0ea5e9,#0369a1)',
+    'linear-gradient(90deg,#06b6d4,#0891b2)',
+    'linear-gradient(90deg,#10b981,#047857)',
+  ];
+
+  // ══ Rellenar DOM ══
+  document.getElementById('dip-name').textContent = name;
+  document.getElementById('dip-name-role').textContent = `${td.sideTier.replace('·','')} · ${completedLevel} Niveles Aprobados con IA`;
+  document.getElementById('dip-cert-title').textContent = td.certTitle;
+  document.getElementById('dip-cert-subtitle').textContent = `Acreditación Micro-curricular · ${tier.label.split('·')[0].trim()}`;
+  document.getElementById('dip-chip').innerHTML = td.chipText;
+  document.getElementById('dip-achievement').innerHTML = achievementText;
+  document.getElementById('dip-modules-badge').textContent = `${td.modules} Módulos · ${td.cycles} Ciclos ✅`;
+  document.getElementById('dip-side-tier').textContent = td.sideTier;
+  document.getElementById('dip-date').textContent = date;
+  document.getElementById('dip-sha').textContent = `SHA · ${certId}`;
+  document.getElementById('dip-cert-id').textContent = certId;
+  document.getElementById('dip-stat-levels').textContent = `${completedLevel} ✅`;
+  document.getElementById('dip-stat-modules').textContent = `${td.modules} / ${td.modules}`;
+  document.getElementById('dip-stat-questions').textContent = td.questions;
+
+  // Sello SVG del tier
+  const sealWrap = document.getElementById('dip-seal-wrap');
+  if(sealWrap) sealWrap.innerHTML = buildDiplomaSealSVG(tier, 72);
+
+  // Temas
+  const topicsGrid = document.getElementById('dip-topics-grid');
+  if(topicsGrid){
+    topicsGrid.innerHTML = '';
+    topics.forEach((t, i) => {
+      const row = document.createElement('div');
+      row.className = 'cer-topic-row';
+      row.innerHTML = `<div class="cer-topic-check">✓</div><span class="cer-topic-num">${String(i+1).padStart(2,'0')}</span><span class="cer-topic-name">${t}</span>`;
+      topicsGrid.appendChild(row);
+    });
   }
 
-  // Adaptar colores del diploma al tier
-  const inner = document.querySelector('.diploma-border-inner');
-  if(inner){
-    inner.style.borderColor  = tier.border;
-    inner.style.background   = tier.bg;
+  // Ciclos
+  const cycleRows = document.getElementById('dip-cycle-rows');
+  if(cycleRows){
+    cycleRows.innerHTML = '';
+    const cycleLabels = ['C·I','C·II','C·III','C·IV','C·V','C·VI'];
+    td.cyclePcts.forEach((pct, i) => {
+      const row = document.createElement('div');
+      row.className = 'cer-cycle-row';
+      row.innerHTML = `<span class="cer-cycle-lbl">${cycleLabels[i]||('C·'+(i+1))}</span>
+        <div class="cer-cycle-track"><div class="cer-cycle-fill" style="background:${cycleColors[i]||cycleColors[0]};width:${pct}%"></div></div>
+        <span class="cer-cycle-pct">${pct}%</span>`;
+      cycleRows.appendChild(row);
+    });
   }
-  const wrap = document.querySelector('#diploma-content');
-  if(wrap) wrap.style.background = tier.bg;
 
-  // Badge de tier debajo del sello
-  let tierBadge = document.getElementById('dip-tier-badge');
-  if(!tierBadge){
-    tierBadge = document.createElement('div');
-    tierBadge.id = 'dip-tier-badge';
-    tierBadge.style.cssText = `font-size:.7rem;font-weight:900;text-transform:uppercase;
-      letter-spacing:.12em;margin:.2rem auto .6rem;display:inline-block;
-      padding:2px 12px;border-radius:20px;`;
-    sealEl?.after(tierBadge);
+  // QR
+  const qrContainer = document.getElementById('dip-qr-container');
+  if(qrContainer){
+    qrContainer.innerHTML = '';
+    const verifyUrl = `https://fatlin.web.app/verify?id=${certId}`;
+    try {
+      if(window.QRCode){
+        new QRCode(qrContainer, {
+          text: verifyUrl,
+          width:110, height:110,
+          colorDark:'#002860', colorLight:'#ffffff',
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } else {
+        // Cargar QRCode si no está disponible
+        const s = document.createElement('script');
+        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js';
+        s.onload = () => {
+          try { new QRCode(qrContainer, {text:verifyUrl,width:110,height:110,colorDark:'#002860',colorLight:'#ffffff',correctLevel:QRCode.CorrectLevel.M}); }catch(e){}
+        };
+        document.head.appendChild(s);
+        qrContainer.innerHTML = '<div style="font-size:.5rem;color:#9ca3af;text-align:center;padding:8px">QR<br>generado<br>al emitir</div>';
+      }
+    } catch(e){
+      qrContainer.innerHTML = '<div style="font-size:.5rem;color:#9ca3af;text-align:center;padding:8px">QR<br>verificable</div>';
+    }
   }
-  tierBadge.textContent = tier.label;
-  tierBadge.style.color       = tier.color;
-  tierBadge.style.background  = `rgba(0,0,0,.06)`;
-  tierBadge.style.border      = `1px solid ${tier.border}`;
-
-  // Título del diploma: color del tier
-  const titleEl = document.querySelector('.diploma-title');
-  if(titleEl) titleEl.style.color = tier.textColor;
-  const subEl = document.querySelector('.diploma-subtitle');
-  if(subEl) subEl.style.color = tier.textColor;
 
   document.getElementById('modal-diploma').classList.add('active');
 }
@@ -3697,7 +4081,7 @@ document.getElementById('btn-dip-print').onclick = async () => {
       scale: 3,
       useCORS: true,
       allowTaint: true,
-      backgroundColor: '#fffbeb',
+      backgroundColor: '#0a1628',
       logging: false,
       width: el.scrollWidth,
       height: el.scrollHeight,
