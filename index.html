@@ -1257,7 +1257,7 @@
       <h3>1. Información que Recopilamos</h3>
       <p>Para el funcionamiento de la gamificación y el ranking, recopilamos:</p>
       <ul>
-        <li><strong>Datos de Perfil:</strong> Nombre de usuario o pseudónimo, país y foto de perfil si el usuario la sube.</li>
+        <li><strong>Datos de Perfil:</strong> Nombre de usuario o pseudónimo, país y foto de perfil. Si inicias sesión con Google, tu foto de perfil de Google se usa automáticamente para personalizar tu experiencia; puedes cambiarla en cualquier momento desde el selector de avatar.</li>
         <li><strong>Progreso Académico:</strong> Puntuaciones, niveles completados, rachas de estudio y diplomas obtenidos.</li>
         <li><strong>Datos Técnicos:</strong> Identificadores de dispositivo, modelo de hardware y versión del sistema operativo.</li>
       </ul>
@@ -2782,7 +2782,17 @@ function triggerLevel5Blast(level){
 
 function initGameUI(){
   document.getElementById('hud-avatar').onclick = openAvatarPicker;
-  // Aplicar foto/emoji en HUD desde el inicio
+  // ── Auto-migrar foto Google si corresponde ──────────────────
+  const _gp = getGooglePhotoURL();
+  if(_gp && !avatarIsPhoto()){
+    if(!selectedAvatar || selectedAvatar === '🧑'){
+      // Nunca personalizó: asignar foto silenciosamente
+      selectedAvatar = _gp; tempAvatar = _gp;
+      saveProgress();
+    }
+    // Si tiene emoji personalizado: respetar su elección (no pisar)
+    // Puede cambiarlo desde el picker
+  }
   setAvatarEl(document.getElementById('hud-avatar'));
   applyLang();
   document.getElementById('auth-screen').style.display='none';
