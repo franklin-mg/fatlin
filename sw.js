@@ -1,11 +1,11 @@
 // ═══════════════════════════════════════════════════
-// FATLIN AI — SERVICE WORKER v1.0
+// FATLIN AI — SERVICE WORKER v7.0
 // Estrategia: Cache-first para assets, Network-first
 // para llamadas a API (Firebase / Claude proxy)
 // ═══════════════════════════════════════════════════
 
-const CACHE_NAME = 'fatlin-ai-v1';
-const CACHE_VERSION = '1.0.0';
+const CACHE_NAME = 'fatlin-ai-v61';
+const CACHE_VERSION = '7.1.0';
 
 // Archivos que se cachean al instalar (App Shell)
 const APP_SHELL = [
@@ -35,8 +35,6 @@ self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(CACHE_NAME).then((cache) => {
       console.log('[SW] Cacheando App Shell');
-      // addAll puede fallar si algún recurso no está disponible;
-      // usamos add individual para mayor tolerancia
       return Promise.allSettled(
         APP_SHELL.map(url => cache.add(url).catch(err => {
           console.warn('[SW] No se pudo cachear:', url, err.message);
@@ -44,7 +42,7 @@ self.addEventListener('install', (event) => {
       );
     }).then(() => {
       console.log('[SW] App Shell cacheada');
-      return self.skipWaiting(); // Activa inmediatamente
+      return self.skipWaiting(); // Activa inmediatamente sin esperar
     })
   );
 });
@@ -62,7 +60,18 @@ self.addEventListener('activate', (event) => {
             return caches.delete(name);
           })
       );
-    }).then(() => self.clients.claim())
+    }).then(() => {
+      // Toma control de todos los clientes abiertos inmediatamente
+      return self.clients.claim();
+    }).then(() => {
+      // ── CLAVE: notifica a todas las pestañas abiertas que recarguen ──
+      // Esto hace que el usuario vea la nueva versión sin tocar nada
+      return self.clients.matchAll({ type: 'window' }).then(clients => {
+        clients.forEach(client => {
+          client.postMessage({ type: 'SW_UPDATED' });
+        });
+      });
+    })
   );
 });
 
@@ -72,7 +81,7 @@ self.addEventListener('fetch', (event) => {
 
   // 1. Peticiones POST o no-GET → siempre red (Firebase writes, API calls)
   if (event.request.method !== 'GET') {
-    return; // Deja pasar sin interceptar
+    return;
   }
 
   // 2. URLs de red obligatoria → nunca cachear
@@ -80,7 +89,6 @@ self.addEventListener('fetch', (event) => {
   if (isNetworkOnly) {
     event.respondWith(
       fetch(event.request).catch(() => {
-        // Si falla la red en una llamada de API, retornar error JSON limpio
         return new Response(
           JSON.stringify({ error: 'Sin conexión. Verifica tu internet.' }),
           { status: 503, headers: { 'Content-Type': 'application/json' } }
@@ -113,7 +121,6 @@ self.addEventListener('fetch', (event) => {
         return cached;
       }
       return fetch(event.request).then(response => {
-        // Cachear respuestas válidas de assets locales
         if (response.ok && event.request.url.startsWith(self.location.origin)) {
           caches.open(CACHE_NAME).then(cache => {
             cache.put(event.request, response.clone());
@@ -121,7 +128,6 @@ self.addEventListener('fetch', (event) => {
         }
         return response;
       }).catch(() => {
-        // Offline fallback: servir index.html para navegación
         if (event.request.destination === 'document') {
           return caches.match('./index.html');
         }
