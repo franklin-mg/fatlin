@@ -930,42 +930,51 @@
         .privacy-decline-link:hover { color:rgba(255,255,255,.45); }
 
         
-        /* ── AVATAR CON FOTO GOOGLE ─────────────────────────── */
-        #hud-avatar img,
-        .logros-avatar img,
-        .acc-av-img,
-        .rank-avatar-img {
-            width:100%; height:100%;
-            object-fit:cover; border-radius:50%;
-            display:block;
+        /* ── MEJORAS MODAL DE JUEGO ──────────────────────────── */
+        /* Indicador de nivel de dificultad */
+        .q-difficulty-bar {
+            display:flex; gap:3px; align-items:center;
+            justify-content:center; margin:.3rem 0 .5rem;
         }
-        #hud-avatar.has-photo { font-size:0; padding:0; overflow:hidden; }
-        .logros-avatar.has-photo { font-size:0; padding:0; overflow:hidden; }
-        .acc-av-wrap.has-photo  { font-size:0; overflow:hidden; }
-        /* Indicador de foto Google en el picker */
-        .av-google-opt {
-            grid-column: span 2;
-            display:flex; align-items:center; gap:8px;
-            background:rgba(66,133,244,.1);
-            border:1.5px solid rgba(66,133,244,.35);
-            border-radius:.85rem; padding:.55rem .75rem;
-            cursor:pointer; margin-bottom:.4rem;
-            transition:background .15s;
+        .q-diff-dot {
+            width:6px; height:6px; border-radius:50%;
+            background:rgba(255,255,255,.15);
+            transition:background .3s;
         }
-        .av-google-opt:hover { background:rgba(66,133,244,.18); }
-        .av-google-opt img {
-            width:36px; height:36px;
-            border-radius:50%; object-fit:cover;
-            border:2px solid rgba(66,133,244,.5);
-            flex-shrink:0;
+        .q-diff-dot.active { background:#fbbf24; box-shadow:0 0 6px #fbbf24; }
+        .q-diff-dot.active.hard  { background:#f87171; box-shadow:0 0 6px #f87171; }
+        .q-diff-dot.active.elite { background:#c084fc; box-shadow:0 0 6px #c084fc; }
+
+        /* Número de pregunta dentro del nivel */
+        .q-counter {
+            font-size:.6rem; font-weight:700; color:rgba(186,230,253,.4);
+            text-align:center; margin-bottom:.2rem; letter-spacing:.08em;
         }
-        .av-google-opt-info { flex:1; }
-        .av-google-opt-label { font-size:.72rem; font-weight:800; color:#93c5fd; }
-        .av-google-opt-sub   { font-size:.6rem;  color:rgba(147,197,253,.55); }
-        .av-google-opt.selected {
-            background:rgba(66,133,244,.22);
-            border-color:rgba(66,133,244,.7);
-            box-shadow:0 0 12px rgba(66,133,244,.3);
+        /* Indicador "preguntas nuevas" */
+        .q-fresh-badge {
+            display:inline-flex; align-items:center; gap:4px;
+            font-size:.58rem; font-weight:700; color:#6ee7b7;
+            background:rgba(16,185,129,.1); border:1px solid rgba(16,185,129,.25);
+            border-radius:20px; padding:1px 8px; margin:.2rem 0 0;
+            opacity:0; transition:opacity .4s;
+        }
+        .q-fresh-badge.visible { opacity:1; }
+
+        /* Mejorar animación de entrada de pregunta */
+        #question-area {
+            transition: opacity .22s ease, transform .22s ease !important;
+        }
+        /* Indicador de tipo V/F más visible */
+        #q-type-badge {
+            font-size:.62rem !important;
+            padding:2px 10px !important;
+            letter-spacing:.1em;
+        }
+        /* Opciones con micro-animación stagger mejorada */
+        .opt { animation: optSlideIn .2s ease both; }
+        @keyframes optSlideIn {
+            from { opacity:0; transform:translateY(6px); }
+            to   { opacity:1; transform:translateY(0); }
         }
 
         </style>
@@ -1257,7 +1266,7 @@
       <h3>1. Información que Recopilamos</h3>
       <p>Para el funcionamiento de la gamificación y el ranking, recopilamos:</p>
       <ul>
-        <li><strong>Datos de Perfil:</strong> Nombre de usuario o pseudónimo, país y foto de perfil. Si inicias sesión con Google, tu foto de perfil de Google se usa automáticamente para personalizar tu experiencia; puedes cambiarla en cualquier momento desde el selector de avatar.</li>
+        <li><strong>Datos de Perfil:</strong> Nombre de usuario o pseudónimo, país y foto de perfil si el usuario la sube.</li>
         <li><strong>Progreso Académico:</strong> Puntuaciones, niveles completados, rachas de estudio y diplomas obtenidos.</li>
         <li><strong>Datos Técnicos:</strong> Identificadores de dispositivo, modelo de hardware y versión del sistema operativo.</li>
       </ul>
@@ -1429,6 +1438,9 @@
             <div class="streak-dot" id="cd2" style="width:16px;height:16px"></div>
             <div class="streak-dot" id="cd3" style="width:16px;height:16px"></div>
         </div>
+        <div class="q-counter" id="q-counter" style="font-size:.6rem;font-weight:700;color:rgba(100,116,139,.7);text-align:center;margin-bottom:.25rem;letter-spacing:.08em"></div>
+        <div id="q-fresh-badge" style="display:none;text-align:center;margin-bottom:.2rem"><span style="font-size:.58rem;font-weight:700;color:#6ee7b7;background:rgba(16,185,129,.1);border:1px solid rgba(16,185,129,.25);border-radius:20px;padding:1px 8px">✨ Nuevas preguntas</span></div>
+        <div class="q-difficulty-bar" id="q-diff-bar" style="display:flex;gap:3px;align-items:center;justify-content:center;margin:.2rem 0 .4rem"></div>
         <div id="question-area">
             <p id="source-badge"></p>
             <p id="q-type-badge" style="font-size:10px;font-weight:700;color:#94a3b8;text-transform:uppercase;letter-spacing:.1em;text-align:center;margin-bottom:.5rem;display:none" data-i18n="true_false">Verdadero o Falso</p>
@@ -2061,29 +2073,101 @@ function getTopicForLevel(level) {
     const depth = _DEPTH_LABELS[Math.min(cycle, _DEPTH_LABELS.length - 1)];
     return depth + PACIE_TOPICS_CYCLE[idx];
 }
-const questionCache = {};
-// TTL solo para el prefetch en segundo plano.
-// Las preguntas del nivel ACTUAL siempre se generan frescas.
-// El caché en memoria sirve únicamente para niveles pre-cargados
-// mientras el usuario juega el nivel anterior.
-const PREFETCH_CACHE_TTL = 8 * 60 * 1000; // 8 min: suficiente para completar un nivel
+// ══════════════════════════════════════════════════════════════════
+//  SISTEMA DE PREGUNTAS — POOL PERSISTENTE ANTI-REPETICIÓN
+//  Estrategia:
+//   1) Pool acumulativo por nivel (localStorage): crece cada sesión
+//   2) Fingerprint de vistas (hash ligero): nunca repite en una sesión
+//   3) Rotación cíclica con desfase diario: orden distinto cada día
+//   4) Prompt con "variación seed": la IA genera contenido diferente
+//   5) Recarga en background al agotar el 70% del pool
+// ══════════════════════════════════════════════════════════════════
 
+const questionCache = {};
+const PREFETCH_CACHE_TTL  = 10 * 60 * 1000; // 10 min para prefetch
+const POOL_MAX_SIZE        = 60;             // máx preguntas por nivel en localStorage
+const POOL_REFRESH_THRESH  = 0.70;          // recargar al consumir 70% del pool
+
+// Clave del pool persistente
+function _poolKey(level){ return `fatlin_pool_${currentLang}_${level}`; }
+// Clave de prefetch (corta vida, solo para arranque rápido)
 function _lsKey(level){ return `fatlin_q_${currentLang}_${level}`; }
 
-// Devuelve preguntas SOLO si fueron pre-cargadas recientemente (prefetch)
-// Para el nivel actual se ignora el caché → siempre fresco
+// ── Hash ligero de string (FNV-32) para fingerprint sin colisiones ──
+function _hashQ(str){
+  let h = 2166136261;
+  for(let i = 0; i < str.length; i++){
+    h ^= str.charCodeAt(i);
+    h = (h * 16777619) >>> 0;
+  }
+  return h.toString(36);
+}
+
+// ── Pool persistente: cargar desde localStorage ──
+function loadPool(level){
+  try{
+    const raw = localStorage.getItem(_poolKey(level));
+    if(raw){
+      const p = JSON.parse(raw);
+      if(Array.isArray(p.questions) && p.questions.length > 0) return p;
+    }
+  }catch(e){}
+  return null;
+}
+
+// ── Pool persistente: guardar/ampliar en localStorage ──
+function savePool(level, questions){
+  try{
+    const existing = loadPool(level);
+    const existHashes = new Set((existing?.questions||[]).map(q=>_hashQ(q.q)));
+    // Agregar solo preguntas nuevas
+    const newOnes = questions.filter(q => !existHashes.has(_hashQ(q.q)));
+    const merged  = [...(existing?.questions||[]), ...newOnes];
+    // Limitar a POOL_MAX_SIZE (FIFO: descartar las más antiguas)
+    const trimmed = merged.slice(-POOL_MAX_SIZE);
+    localStorage.setItem(_poolKey(level), JSON.stringify({
+      questions: trimmed,
+      updatedAt: Date.now(),
+      totalSeen: (existing?.totalSeen||0)
+    }));
+    return trimmed;
+  }catch(e){ return questions; }
+}
+
+// ── Marcar preguntas como vistas en el pool persistente ──
+function markPoolSeen(level, hashes){
+  try{
+    const raw = localStorage.getItem(_poolKey(level));
+    if(!raw) return;
+    const p = JSON.parse(raw);
+    p.totalSeen = (p.totalSeen||0) + hashes.length;
+    localStorage.setItem(_poolKey(level), JSON.stringify(p));
+  }catch(e){}
+}
+
+// ── Elegir un subconjunto del pool con rotación anti-repetición ──
+// Usa un desfase basado en (día del año × nivel) para que el orden
+// cambie cada día aunque las preguntas sean las mismas.
+function selectFromPool(level, pool, sessionSeen){
+  const dayOfYear = Math.floor(Date.now() / 86400000); // días desde epoch
+  const offset    = (dayOfYear * 7 + level * 3) % Math.max(pool.length, 1);
+  // Rotar el pool por el offset diario
+  const rotated = [...pool.slice(offset), ...pool.slice(0, offset)];
+  // Filtrar las ya vistas en esta sesión
+  const unseen  = rotated.filter(q => !sessionSeen.has(_hashQ(q.q)));
+  return unseen.length > 0 ? unseen : rotated; // si todas vistas → reciclar
+}
+
+// ── getCachedQuestions: para prefetch rápido ──
 function getCachedQuestions(level, isPrefetch=false){
   const m = questionCache[level];
   if(m){
-    // Si fue generado hace menos de PREFETCH_CACHE_TTL lo usamos
     if(Date.now() - m.generatedAt < PREFETCH_CACHE_TTL) return m.questions;
-    // Caducó → eliminar para forzar nueva generación
     delete questionCache[level];
-    try { localStorage.removeItem(_lsKey(level)); } catch(e){}
+    try{ localStorage.removeItem(_lsKey(level)); }catch(e){}
   }
-  // localStorage solo como respaldo de prefetch (mismo TTL)
   if(isPrefetch){
-    try {
+    try{
       const raw = localStorage.getItem(_lsKey(level));
       if(raw){
         const parsed = JSON.parse(raw);
@@ -2093,7 +2177,7 @@ function getCachedQuestions(level, isPrefetch=false){
         }
         localStorage.removeItem(_lsKey(level));
       }
-    } catch(e){}
+    }catch(e){}
   }
   return null;
 }
@@ -2101,16 +2185,34 @@ function getCachedQuestions(level, isPrefetch=false){
 function setCachedQuestions(level, questions){
   const entry = { questions, generatedAt: Date.now() };
   questionCache[level] = entry;
-  try { localStorage.setItem(_lsKey(level), JSON.stringify(entry)); } catch(e){}
+  try{ localStorage.setItem(_lsKey(level), JSON.stringify(entry)); }catch(e){}
+  // También ampliar el pool persistente
+  savePool(level, questions);
 }
 
 function clearQuestionCache(){
   Object.keys(questionCache).forEach(k => delete questionCache[k]);
-  try {
+  try{
     Object.keys(localStorage)
-      .filter(k => k.startsWith('fatlin_q_'))
+      .filter(k => k.startsWith('fatlin_q_') || k.startsWith('fatlin_pool_'))
       .forEach(k => localStorage.removeItem(k));
-  } catch(e){}
+  }catch(e){}
+}
+
+// ── Variación semántica del prompt: seed diario ──
+// Hace que la IA genere ángulos distintos del mismo tema cada día
+function _promptSeed(level){
+  const dayOfYear = Math.floor(Date.now() / 86400000);
+  const seeds = [
+    'enfócate en APLICACIONES PRÁCTICAS y casos de uso reales',
+    'enfócate en ERRORES COMUNES y malentendidos a evitar',
+    'enfócate en COMPARACIONES entre fases y conceptos similares',
+    'enfócate en BENEFICIOS MEDIBLES y evidencia empírica',
+    'enfócate en PROCEDIMIENTOS PASO A PASO de implementación',
+    'enfócate en ROLES Y RESPONSABILIDADES de tutores y estudiantes',
+    'enfócate en HERRAMIENTAS Y RECURSOS tecnológicos específicos',
+  ];
+  return seeds[(dayOfYear + level) % seeds.length];
 }
 
 let _prefetchInProgress = new Set();
@@ -2145,13 +2247,13 @@ async function generateQuestionsWithClaude(level) {
     const sourcesStr = PACIE_SOURCES.join(', ');
     const expert = isExpertLevel(level);
     const systemPrompt = expert
-      ? `Actúa como el Jurado de la Quinta Vergara y experto Master en Metodología PACIE. Evalúas si el usuario merece la Lira de Oro. Fuentes oficiales: ${sourcesStr}. Usa web_search. RESPONDE SOLO EN JSON VÁLIDO sin markdown ni backticks.`
+      ? `Actúa como el Jurado de la Quinta Vergara y experto Master en Metodología PACIE. Evalúas si el usuario merece la Lira de Oro. Fuentes oficiales: ${sourcesStr}. Usa web_search. SESIÓN-SEED: ${_promptSeed(level)} — genera preguntas desde ESTE ÁNGULO específico. RESPONDE SOLO EN JSON VÁLIDO sin markdown ni backticks.`
       : `Eres un experto en la metodología PACIE desarrollada por FATLA. Tu única fuente son: ${sourcesStr}. Usa web_search para consultar esas fuentes. RESPONDE ÚNICAMENTE EN JSON VÁLIDO.`;
     const userPrompt = expert
       ? `Nivel EXPERTO sobre "PACIE aplicado". Genera 12 preguntas de ELITE VARIADAS (7 mc + 5 tf) para nivel ${level}. Tema: ${topic}.
 REGLAS: Crea mini-escenarios reales (2-3 lineas). Prohibido preguntar definiciones basicas. Distractores tecnicamente plausibles pero incorrectos segun PACIE. Tono profesional de premiacion. CADA pregunta debe abordar un aspecto diferente del tema. No repitas conceptos entre preguntas.
 RESPONDE SOLO JSON: {"questions":[{"type":"mc","q":"[Escenario real]","a":"...","o":["...","...","...","..."],"j":"Correcto. [explicacion con fase PACIE especifica]","source":"fatla.org"}]}`
-      : `Busca sobre "${topic}" en las fuentes FATLA/PACIE. Genera 12 preguntas VARIADAS Y DIVERSAS (7 mc + 5 tf) para nivel ${level}. IMPORTANTE: cada pregunta debe abordar un aspecto diferente del subtema (aplicación, concepto, ejemplo, beneficio, diferencia, etc.). No repitas el mismo concepto en distintas preguntas.
+      : `Busca sobre "${topic}" en las fuentes FATLA/PACIE. Genera 12 preguntas VARIADAS (7 mc + 5 tf) para nivel ${level}. SESIÓN ${_promptSeed(level)}. REGLA CRÍTICA: cada pregunta debe abordar un ÁNGULO ÚNICO y DIFERENTE del tema — prohibido repetir el mismo concepto aunque sea con diferente redacción. Las opciones incorrectas (distractores) deben ser plausibles pero claramente incorrectas según PACIE.
 RESPONDE SOLO con: {"questions":[{"type":"mc","q":"...","a":"...","o":["...","...","...","..."],"j":"...","source":"fatla.org"},{"type":"tf","q":"...","a":"Verdadero","o":["Verdadero","Falso"],"j":"...","source":"pacie.education"}]}
 Reglas: en mc "a" debe estar en "o"; en tf "a" es "Verdadero" o "Falso".`;
 
@@ -2333,10 +2435,7 @@ async function loadProgress(){
   if(!cloudData && !localData){
     game.level = 1; game.stars = 0; game.lives = 5;
     game.lastDeathTime = null; game.badges = 0; game.lastRewardAt = 0;
-    // Usuario nuevo: si tiene foto Google, usarla como avatar por defecto
-  const _gPhoto = getGooglePhotoURL();
-  selectedAvatar = _gPhoto || "🧑";
-  tempAvatar     = selectedAvatar;
+    selectedAvatar = "🧑"; tempAvatar = "🧑";
   } else if(cloudOk && cloudData && !localData){
     game.level       = cloudData.level       || 1;
     game.stars       = cloudData.stars       || 0;
@@ -2344,10 +2443,8 @@ async function loadProgress(){
     game.lastDeathTime = cloudData.lastDeathTime || null;
     game.badges      = cloudData.badges      || 0;
     game.lastRewardAt= cloudData.lastRewardAt|| 0;
-    // Si no tiene avatar guardado o es el default, usar foto Google
-  { const _saved = cloudData.avatar; const _gp = getGooglePhotoURL();
-    selectedAvatar = (!_saved || _saved === "🧑") ? (_gp || "🧑") : _saved;
-    tempAvatar     = selectedAvatar; }
+    selectedAvatar   = cloudData.avatar      || "🧑";
+    tempAvatar       = selectedAvatar;
     game.shields     = cloudData.shields     || 0;
     game.streakDays  = cloudData.streakDays  || 0;
     game.lastPlayDate= cloudData.lastPlayDate|| null;
@@ -2364,9 +2461,8 @@ async function loadProgress(){
     game.lastDeathTime = localData.lastDeathTime || null;
     game.badges      = localData.badges      || 0;
     game.lastRewardAt= localData.lastRewardAt|| 0;
-    { const _saved = localData.avatar; const _gp = getGooglePhotoURL();
-    selectedAvatar = (!_saved || _saved === "🧑") ? (_gp || "🧑") : _saved;
-    tempAvatar     = selectedAvatar; }
+    selectedAvatar   = localData.avatar      || "🧑";
+    tempAvatar       = selectedAvatar;
     game.shields     = localData.shields     || 0;
     game.streakDays  = localData.streakDays  || 0;
     game.lastPlayDate= localData.lastPlayDate|| null;
@@ -2390,7 +2486,7 @@ async function loadProgress(){
     game.lastDeathTime = newerSource.lastDeathTime || null;
     game.badges        = newerSource.badges        || 0;
     game.lastRewardAt  = newerSource.lastRewardAt  || 0;
-    selectedAvatar     = (()=>{ const _s=newerSource.avatar; const _gp=getGooglePhotoURL(); return (!_s||_s==="🧑")?(_gp||"🧑"):_s; })();
+    selectedAvatar     = newerSource.avatar        || "🧑";
     tempAvatar         = selectedAvatar;
     game.shields       = newerSource.shields       || 0;
     game.streakDays    = newerSource.streakDays    || 0;
@@ -2679,47 +2775,6 @@ window.declinePrivacy = function(){
   }
 };
 
-// ══════════════════════════════════════════════════════════════════
-//  SISTEMA DE AVATAR CON FOTO GOOGLE
-// ══════════════════════════════════════════════════════════════════
-
-// Retorna true si el avatar actual es una URL de foto (no emoji)
-function avatarIsPhoto(){
-  return selectedAvatar && selectedAvatar.startsWith('http');
-}
-
-// Retorna la foto de Google del usuario si está disponible
-function getGooglePhotoURL(){
-  try {
-    const u = game.user || (typeof auth !== 'undefined' ? auth.currentUser : null);
-    return (u && !u.isAnonymous && u.photoURL) ? u.photoURL : null;
-  } catch(e){ return null; }
-}
-
-// Renderiza un elemento avatar (div/span) con foto o emoji
-// el: elemento DOM target, size opcional para <img>
-function setAvatarEl(el, size){
-  if(!el) return;
-  const photo = avatarIsPhoto() ? selectedAvatar : null;
-  if(photo){
-    el.classList.add('has-photo');
-    el.innerHTML = `<img src="${photo}" alt="avatar" onerror="this.parentElement.classList.remove('has-photo');this.parentElement.textContent='🧑';">`;
-  } else {
-    el.classList.remove('has-photo');
-    el.textContent = selectedAvatar || '🧑';
-  }
-}
-
-// Genera HTML de avatar para uso en ranking/listas (no modifica DOM)
-function getAvatarHTML(avatarVal, sizePx){
-  sizePx = sizePx || 28;
-  if(avatarVal && avatarVal.startsWith('http')){
-    return `<img src="${avatarVal}" alt="av" style="width:${sizePx}px;height:${sizePx}px;border-radius:50%;object-fit:cover;vertical-align:middle;" onerror="this.outerHTML='🧑'">`;
-  }
-  return `<span style="font-size:${Math.round(sizePx*.85)}px">${avatarVal||'🧑'}</span>`;
-}
-
-
 async function saveProgress(){if(!game.user)return;const payload={
     level:game.level, stars:game.stars, lives:game.lives,
     lastDeathTime:game.lastDeathTime, badges:game.badges,
@@ -2782,18 +2837,6 @@ function triggerLevel5Blast(level){
 
 function initGameUI(){
   document.getElementById('hud-avatar').onclick = openAvatarPicker;
-  // ── Auto-migrar foto Google si corresponde ──────────────────
-  const _gp = getGooglePhotoURL();
-  if(_gp && !avatarIsPhoto()){
-    if(!selectedAvatar || selectedAvatar === '🧑'){
-      // Nunca personalizó: asignar foto silenciosamente
-      selectedAvatar = _gp; tempAvatar = _gp;
-      saveProgress();
-    }
-    // Si tiene emoji personalizado: respetar su elección (no pisar)
-    // Puede cambiarlo desde el picker
-  }
-  setAvatarEl(document.getElementById('hud-avatar'));
   applyLang();
   document.getElementById('auth-screen').style.display='none';
   document.getElementById('game-container').style.display='block';
@@ -2866,7 +2909,7 @@ function renderMap(){const nc=document.getElementById('nodes-container'),sv=docu
 
 async function startChallenge(){
   if(game.lives<=0){showError(t("no_lives"));return;}
-  game.correctCount=0; game.consecutiveErrors=0; game._seenQs=new Set(); updateProgressUI(); game.isProcessing=true;
+  game.correctCount=0; game.consecutiveErrors=0; game._seenQs=new Set(); game._seenQHashes=new Set(); game._poolRefreshing=false; updateProgressUI(); game.isProcessing=true;
   // Mostrar tip si acaba de ascender de liga
   if(game._pendingLigaTip){ showLigaTip(game._pendingLigaTip); game._pendingLigaTip=null; }
   const badge=document.getElementById('replay-badge'),num=document.getElementById('replay-num'),lbl=document.getElementById('clabel');
@@ -2876,95 +2919,182 @@ async function startChallenge(){
   const aiLoad = document.getElementById('ai-loading');
   const sub = document.getElementById('source-badge');
 
-  // ── Intentar usar preguntas pre-cargadas por prefetch ──────────
-  // IMPORTANTE: getCachedQuestions sin isPrefetch=true devuelve null
-  // para el nivel actual si el TTL caducó, forzando generación fresca.
-  const prefetched = getCachedQuestions(game.playingLevel, true);
+  // ═══════════════════════════════════════════════════════════════
+  //  SISTEMA DE PREGUNTAS — POOL PERSISTENTE + PREFETCH + FALLBACK
+  // ═══════════════════════════════════════════════════════════════
+  const lvl = game.playingLevel;
+  // Inicializar fingerprint de sesión para este nivel
+  if(!game._seenQs) game._seenQs = new Set();
 
-  if(prefetched){
-    // Tenemos preguntas pre-cargadas frescas → arranque instantáneo
+  // ── 1) Pool persistente en localStorage ──────────────────────
+  const persistedPool = loadPool(lvl);
+  const poolQuestions  = persistedPool?.questions || [];
+
+  // ── 2) Prefetch en memoria (arranque rápido) ──────────────────
+  const prefetched = getCachedQuestions(lvl, true);
+
+  if(poolQuestions.length >= 8){
+    // Tenemos pool suficiente → arrancar inmediato con rotación anti-repetición
     aiLoad.classList.remove('active');
-    game.levelQuestions = [...prefetched].sort(()=>Math.random()-.5);
+    const rotated = selectFromPool(lvl, poolQuestions, game._seenQs);
+    game.levelQuestions = rotated;
     game.qIndex = 0;
     game.isProcessing = false;
     showNextQuestion();
-    // Invalidar caché de este nivel para que la próxima vez sea fresco
-    delete questionCache[game.playingLevel];
-    try { localStorage.removeItem(_lsKey(game.playingLevel)); } catch(e){}
-    // Pre-cargar los siguientes en segundo plano
-    prefetchAhead(game.playingLevel, 3);
+    // Invalidar prefetch cache (era para este nivel)
+    delete questionCache[lvl];
+    try{ localStorage.removeItem(_lsKey(lvl)); }catch(e){}
+    // Recargar en background si el pool tiene <70% sin ver hoy
+    const totalSeen = persistedPool?.totalSeen || 0;
+    const needsRefresh = poolQuestions.length < 20 || totalSeen > poolQuestions.length * POOL_REFRESH_THRESH;
+    if(needsRefresh){
+      setTimeout(()=>{
+        generateQuestionsWithClaude(lvl).then(fresh=>{
+          const merged = savePool(lvl, fresh);
+          // Si el usuario aún está en el mismo nivel, ampliar el pool en vivo
+          if(game.playingLevel === lvl && merged.length > game.levelQuestions.length){
+            const extras = merged.filter(q => !game.levelQuestions.some(x=>x.q===q.q));
+            if(extras.length > 0){
+              game.levelQuestions = [...game.levelQuestions, ...extras];
+              // Toast sutil: nuevas preguntas disponibles
+              if(typeof showToast==='function')
+                showToast('✨ Nuevas preguntas cargadas para este nivel','#0369a1',2200);
+              const fb = document.getElementById('q-fresh-badge');
+              if(fb){ fb.style.display='block'; setTimeout(()=>fb.style.display='none',3000); }
+            }
+          }
+        }).catch(()=>{});
+      }, 3000);
+    }
+    prefetchAhead(lvl, 3);
+
+  } else if(prefetched){
+    // Sin pool pero tenemos prefetch → usarlo y ampliar pool
+    aiLoad.classList.remove('active');
+    savePool(lvl, prefetched);
+    const rotated = selectFromPool(lvl, prefetched, game._seenQs);
+    game.levelQuestions = rotated;
+    game.qIndex = 0;
+    game.isProcessing = false;
+    showNextQuestion();
+    delete questionCache[lvl];
+    try{ localStorage.removeItem(_lsKey(lvl)); }catch(e){}
+    prefetchAhead(lvl, 3);
 
   } else {
-    // Sin prefetch disponible → generar ahora con spinner visible
+    // Sin pool ni prefetch → generar ahora (spinner visible)
     aiLoad.classList.add('active');
     if(sub) sub.innerText = '';
-    try {
-      const qs = await generateQuestionsWithClaude(game.playingLevel);
+    try{
+      const qs = await generateQuestionsWithClaude(lvl);
       aiLoad.classList.remove('active');
-      game.levelQuestions = [...qs].sort(()=>Math.random()-.5);
+      savePool(lvl, qs); // persistir para próximas sesiones
+      const rotated = selectFromPool(lvl, qs, game._seenQs);
+      game.levelQuestions = rotated;
       game.qIndex = 0;
       game.isProcessing = false;
       showNextQuestion();
-      // NO guardar en caché el nivel actual → próxima vez siempre fresco
-      prefetchAhead(game.playingLevel, 3);
-    } catch(apiErr){
-      // ── Fallback silencioso al banco de preguntas ────────────
-      console.warn('[Challenge] API falló, usando banco local:', apiErr.message);
+      prefetchAhead(lvl, 3);
+    }catch(apiErr){
+      // ── Fallback: banco estático + reintento silencioso ───────
+      console.warn('[Challenge] API falló:', apiErr.message);
       aiLoad.classList.remove('active');
-      const fallback = [...FALLBACK_QUESTIONS].sort(()=>Math.random()-.5);
-      game.levelQuestions = fallback;
+      // Usar pool local si existe aunque esté vacío, o FALLBACK_QUESTIONS
+      const fallbackBase = poolQuestions.length > 0 ? poolQuestions : [...FALLBACK_QUESTIONS];
+      game.levelQuestions = selectFromPool(lvl, fallbackBase, game._seenQs);
       game.qIndex = 0;
       game.isProcessing = false;
       showNextQuestion();
-      // Reintentar generación en segundo plano sin interrumpir al usuario
+      // Reintento silencioso en 6s
       setTimeout(()=>{
-        generateQuestionsWithClaude(game.playingLevel)
-          .then(qs => {
-            // Solo reemplazar si el usuario aún no avanzó de pregunta
-            if(game.correctCount === 0 && game.playingLevel === game.level){
-              game.levelQuestions = [...qs].sort(()=>Math.random()-.5);
-              game.qIndex = 0;
-              if(sub) sub.innerText = '';
-            }
-          })
-          .catch(()=>{ /* fallo silencioso, banco local sigue activo */ });
-      }, 5000);
+        generateQuestionsWithClaude(lvl).then(qs=>{
+          savePool(lvl, qs);
+          if(game.correctCount===0 && game.playingLevel===lvl){
+            const rotated = selectFromPool(lvl, qs, game._seenQs);
+            game.levelQuestions = [...game.levelQuestions, ...rotated.filter(q=>
+              !game.levelQuestions.some(x=>x.q===q.q))];
+            if(sub) sub.innerText='';
+            showToast('✨ Preguntas actualizadas','#0369a1',2000);
+          }
+        }).catch(()=>{});
+      }, 6000);
     }
   }
 }
 
 function showNextQuestion(){
-  // ── Anti-repetición ─────────────────────────────────────────
-  // Usamos un Set con el texto de cada pregunta para evitar
-  // mostrar la misma dentro del mismo intento de nivel.
+  // ── Anti-repetición con fingerprint de hash ──────────────────
   if(!game._seenQs) game._seenQs = new Set();
+  if(!game._seenQHashes) game._seenQHashes = new Set();
 
-  // Si ya se mostraron TODAS las preguntas disponibles,
-  // limpiamos el historial (nueva vuelta) y pedimos más al API
-  if(game._seenQs.size >= game.levelQuestions.length){
-    game._seenQs.clear();
-    // Solicitar banco adicional en segundo plano si el pool es pequeño
-    if(game.levelQuestions.length < 14){
-      generateQuestionsWithClaude(game.playingLevel).then(fresh=>{
-        if(fresh && fresh.length >= 3){
-          // Fusionar sin duplicar por texto de pregunta
-          const existing = new Set(game.levelQuestions.map(q=>q.q));
-          const newOnes  = fresh.filter(q=>!existing.has(q.q));
-          if(newOnes.length > 0){
-            game.levelQuestions = [...game.levelQuestions, ...newOnes];
-            setCachedQuestions(game.playingLevel, game.levelQuestions);
-          }
+  // ── Auto-ampliar pool si se están agotando las preguntas ──────
+  const unseenNow = game.levelQuestions.filter(q => !game._seenQHashes.has(_hashQ(q.q)));
+  if(unseenNow.length <= 2 && !game._poolRefreshing){
+    game._poolRefreshing = true;
+    generateQuestionsWithClaude(game.playingLevel).then(fresh=>{
+      game._poolRefreshing = false;
+      if(fresh && fresh.length >= 3){
+        const merged = savePool(game.playingLevel, fresh);
+        const newOnes = fresh.filter(q => !game._seenQHashes.has(_hashQ(q.q))
+                                       && !game.levelQuestions.some(x=>x.q===q.q));
+        if(newOnes.length > 0){
+          game.levelQuestions = [...game.levelQuestions, ...newOnes];
+          markPoolSeen(game.playingLevel, [...game._seenQHashes]);
         }
-      }).catch(()=>{});
-    }
+      }
+    }).catch(()=>{ game._poolRefreshing = false; });
   }
 
-  // Elegir pregunta no vista aún en esta ronda
-  const unseen = game.levelQuestions.filter(q=>!game._seenQs.has(q.q));
-  const pool   = unseen.length > 0 ? unseen : game.levelQuestions;
-  const pick   = Math.floor(Math.random() * pool.length);
-  game.currentQ = pool[pick];
+  // Si se agotaron TODAS las vistas → resetear (nueva vuelta con rotación)
+  if(unseenNow.length === 0){
+    game._seenQHashes.clear();
+    game._seenQs.clear();
+    // Rotar el pool con un offset diferente para no repetir el mismo orden
+    game.levelQuestions = selectFromPool(
+      game.playingLevel, game.levelQuestions, new Set()
+    );
+  }
+
+  // Elegir pregunta no vista
+  const available = game.levelQuestions.filter(q => !game._seenQHashes.has(_hashQ(q.q)));
+  const pool      = available.length > 0 ? available : game.levelQuestions;
+  const pick      = Math.floor(Math.random() * pool.length);
+  game.currentQ   = pool[pick];
   game._seenQs.add(game.currentQ.q);
+  game._seenQHashes.add(_hashQ(game.currentQ.q));
+
+  // ── Actualizar counter de pregunta ───────────────────────────
+  const qCountEl = document.getElementById('q-counter');
+  if(qCountEl){
+    const seen = game._seenQHashes.size;
+    const total = game.levelQuestions.length;
+    qCountEl.textContent = `Pregunta ${seen} de ${total} disponibles · Nivel ${game.playingLevel}`;
+  }
+
+  // ── Barra de dificultad (1-5 puntos según nivel y tipo) ───────
+  const diffBar = document.getElementById('q-diff-bar');
+  if(diffBar){
+    const posInCycle = ((game.playingLevel - 1) % 60) + 1;
+    const isElite  = posInCycle >= 49;
+    const isHard   = posInCycle >= 37;
+    const diffLevel = isElite ? 5 : isHard ? 4 : posInCycle >= 25 ? 3 : posInCycle >= 13 ? 2 : 1;
+    diffBar.innerHTML = '';
+    for(let i = 0; i < 5; i++){
+      const dot = document.createElement('div');
+      dot.className = 'q-diff-dot' +
+        (i < diffLevel ? (' active' + (isElite?' elite':isHard?' hard':'')) : '');
+      dot.style.cssText = 'width:6px;height:6px;border-radius:50%;margin:0 2px;background:' +
+        (i < diffLevel ? (isElite?'#c084fc':isHard?'#f87171':'#fbbf24') : 'rgba(0,0,0,.1)');
+      diffBar.appendChild(dot);
+    }
+    // Label de dificultad
+    const labels = ['','Básico','Intermedio','Avanzado','Difícil','ÉLITE'];
+    const colors = ['','#94a3b8','#fbbf24','#f97316','#f87171','#c084fc'];
+    const lbl = document.createElement('span');
+    lbl.style.cssText = `font-size:.55rem;font-weight:800;color:${colors[diffLevel]};margin-left:5px;text-transform:uppercase;letter-spacing:.1em`;
+    lbl.textContent = labels[diffLevel];
+    diffBar.appendChild(lbl);
+  }
   game.qIndex++;const area=document.getElementById('question-area');area.style.opacity='0';area.style.transform='translateY(8px)';requestAnimationFrame(()=>{document.getElementById('txt-q').innerText=game.currentQ.q;document.getElementById('source-badge').innerText=game.currentQ.source?`📚 Fuente: ${game.currentQ.source}`:'';const tb=document.getElementById('q-type-badge');tb.style.display=game.currentQ.type==='tf'?'block':'none';renderOptions();area.style.transition='opacity .25s ease, transform .25s ease';area.style.opacity='1';area.style.transform='translateY(0)';updateProgressUI();});}
 
 function renderOptions(){const c=document.getElementById('opts-container');c.innerHTML='';const isTF=game.currentQ.type==='tf';const opts=isTF?[...game.currentQ.o]:[...game.currentQ.o].sort(()=>Math.random()-.5);opts.forEach((opt,idx)=>{const b=document.createElement('button');b.className=`opt${isTF?' vf':''}`;b.style.animationDelay=`${idx*60}ms`;b.textContent=isTF?(opt==='Verdadero'?t('tf_true'):t('tf_false')):opt;b.onclick=()=>{if(game.isProcessing)return;opt===game.currentQ.a?handleCorrect(b):handleWrong(b);};c.appendChild(b);});}
@@ -3032,13 +3162,13 @@ function buildRankItem(p,idx,isMe,maxL,showL=false,promoCut=0){
     lineClass = idx < promoCut ? ' above-line' : ' below-line';
   }
   item.className=`ritem${isMe?' me':''}${lineClass}`;
-  item.innerHTML=`<div style="font-size:1.4rem;width:32px;text-align:center">${medal}</div><div style="margin-right:6px;flex-shrink:0;display:flex;align-items:center">${getAvatarHTML(p.avatar,26)}</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:#1e293b;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${p.displayName||'Jugador'}${isMe?' <span style="color:#0ea5e9">(Tú)</span>':''}${lb}</span><span style="font-size:.75rem;font-weight:700;color:#0284c7">Nv.${p.level}</span></div><div class="rbar" style="margin-top:4px"><div class="rbar-fill" style="width:${Math.round((p.level/maxL)*100)}%"></div></div><span style="font-size:10px;color:#94a3b8">⭐ ${p.stars||0} pts</span></div>`;
+  item.innerHTML=`<div style="font-size:1.4rem;width:32px;text-align:center">${medal}</div><div style="font-size:1.3rem;margin-right:6px;flex-shrink:0">${p.avatar||'🧑'}</div><div style="flex:1;min-width:0"><div style="display:flex;justify-content:space-between;align-items:center"><span style="font-weight:700;color:#1e293b;font-size:.85rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px">${p.displayName||'Jugador'}${isMe?' <span style="color:#0ea5e9">(Tú)</span>':''}${lb}</span><span style="font-size:.75rem;font-weight:700;color:#0284c7">Nv.${p.level}</span></div><div class="rbar" style="margin-top:4px"><div class="rbar-fill" style="width:${Math.round((p.level/maxL)*100)}%"></div></div><span style="font-size:10px;color:#94a3b8">⭐ ${p.stars||0} pts</span></div>`;
   return item;
 }
 function buildErrFallback(el){el.innerHTML=`<div style="text-align:center;padding:1rem"><p style="color:#94a3b8;font-size:.85rem;margin-bottom:.5rem">Sin conexión o sin datos.</p><div class="ritem me"><div style="font-size:1.4rem;width:32px;text-align:center">🏆</div><div style="font-size:1.3rem;margin-right:6px">${selectedAvatar}</div><div style="flex:1"><div style="display:flex;justify-content:space-between"><span style="font-weight:700;color:#1e293b;font-size:.85rem">Tú (local)</span><span style="font-size:.75rem;font-weight:700;color:#0284c7">Nv.${game.level}</span></div><div class="rbar" style="margin-top:4px"><div class="rbar-fill" style="width:100%"></div></div><span style="font-size:10px;color:#94a3b8">⭐ ${game.stars} pts</span></div></div></div>`;}
 window.switchRankTab=function(tab){document.getElementById('tab-global').classList.toggle('active',tab==='global');document.getElementById('tab-liga').classList.toggle('active',tab==='liga');document.getElementById('panel-global').style.display=tab==='global'?'':'none';document.getElementById('panel-liga').style.display=tab==='liga'?'':'none';if(tab==='liga')loadLigaData();};
 async function loadGlobalRanking(){const list=document.getElementById('ranking-list');list.innerHTML='<div class="ldots"><span></span><span></span><span></span></div>';try{let pl=[];try{const q=query(collection(db,`fatlin_ranking_${APP_ID}`),orderBy('level','desc'),limit(25));const s=await getDocs(q);s.forEach(d=>pl.push({id:d.id,...d.data()}));}catch(e){const s=await getDocs(collection(db,`fatlin_ranking_${APP_ID}`));s.forEach(d=>pl.push({id:d.id,...d.data()}));pl.sort((a,b)=>(b.level||0)-(a.level||0)||(b.stars||0)-(a.stars||0));pl=pl.slice(0,25);}if(!pl.length){list.innerHTML='<p style="text-align:center;color:#94a3b8;padding:2rem;font-size:.85rem">¡Sé el primero!</p>';return;}list.innerHTML='';const ml=Math.max(...pl.map(p=>p.level||1));pl.forEach((p,i)=>{const isMe=game.user&&p.id===game.user.uid;if(i===4&&pl.length>5){const d=document.createElement('div');d.className='rdiv';list.appendChild(d);}list.appendChild(buildRankItem(p,i,isMe,ml,true));});const inL=pl.some(p=>game.user&&p.id===game.user.uid);if(!inL&&game.user){const sep=document.createElement('p');sep.style.cssText='font-size:10px;color:#94a3b8;text-align:center;margin:.5rem 0;font-weight:700;text-transform:uppercase;letter-spacing:.1em';sep.innerText='— Tu posición —';list.appendChild(sep);list.appendChild(buildRankItem({id:game.user.uid,displayName:game.user.displayName||game.user.email?.split('@')[0]||'Tú',level:game.level,stars:game.stars,avatar:selectedAvatar},999,true,ml,false));}}catch(e){buildErrFallback(list);}}
-async function loadLigaData(){document.getElementById('liga-week-lbl').innerText=getWeekLabel();document.getElementById('liga-cnt').innerText=getWeekCountdown();const t5=document.getElementById('liga-top5'),fu=document.getElementById('liga-full');t5.innerHTML='<div class="ldots"><span></span><span></span><span></span></div>';fu.innerHTML='';try{const ws=getWeekStart();let pl=[];try{const q=query(collection(db,`fatlin_weekly_${APP_ID}`),orderBy('stars','desc'),limit(50));const s=await getDocs(q);s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}catch(e){const s=await getDocs(collection(db,`fatlin_weekly_${APP_ID}`));s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}pl.sort((a,b)=>(b.stars||0)-(a.stars||0)||(b.level||0)-(a.level||0));pl=pl.slice(0,25);if(!pl.length){t5.innerHTML='<p style="color:rgba(186,230,253,.7);font-size:.8rem;text-align:center">Nadie ha jugado.</p>';fu.innerHTML='';return;}t5.innerHTML='';const medals=['🥇','🥈','🥉','🏅','🏅'];pl.slice(0,5).forEach((p,i)=>{const isMe=game.user&&p.uid===game.user.uid;const item=document.createElement('div');item.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.1)';item.innerHTML=`<span style="font-size:1.3rem;width:28px;text-align:center">${medals[i]}</span><span style="display:inline-flex;align-items:center">${getAvatarHTML(p.avatar,22)}</span><div style="flex:1;min-width:0"><p style="color:white;font-weight:700;font-size:.85rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.displayName||'Jugador'}${isMe?' (Tú)':''}</p><p style="color:rgba(255,255,255,.6);font-size:.7rem;margin:0">⭐ ${p.stars||0} pts · Nv.${p.level}</p></div>`;t5.appendChild(item);});fu.innerHTML='';const ms=Math.max(...pl.map(p=>p.stars||1));
+async function loadLigaData(){document.getElementById('liga-week-lbl').innerText=getWeekLabel();document.getElementById('liga-cnt').innerText=getWeekCountdown();const t5=document.getElementById('liga-top5'),fu=document.getElementById('liga-full');t5.innerHTML='<div class="ldots"><span></span><span></span><span></span></div>';fu.innerHTML='';try{const ws=getWeekStart();let pl=[];try{const q=query(collection(db,`fatlin_weekly_${APP_ID}`),orderBy('stars','desc'),limit(50));const s=await getDocs(q);s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}catch(e){const s=await getDocs(collection(db,`fatlin_weekly_${APP_ID}`));s.forEach(d=>{const dat=d.data();if(dat.weekStart===ws)pl.push({id:d.id,...dat});});}pl.sort((a,b)=>(b.stars||0)-(a.stars||0)||(b.level||0)-(a.level||0));pl=pl.slice(0,25);if(!pl.length){t5.innerHTML='<p style="color:rgba(186,230,253,.7);font-size:.8rem;text-align:center">Nadie ha jugado.</p>';fu.innerHTML='';return;}t5.innerHTML='';const medals=['🥇','🥈','🥉','🏅','🏅'];pl.slice(0,5).forEach((p,i)=>{const isMe=game.user&&p.uid===game.user.uid;const item=document.createElement('div');item.style.cssText='display:flex;align-items:center;gap:8px;padding:8px 4px;border-bottom:1px solid rgba(255,255,255,.1)';item.innerHTML=`<span style="font-size:1.3rem;width:28px;text-align:center">${medals[i]}</span><span style="font-size:1.2rem">${p.avatar||'🧑'}</span><div style="flex:1;min-width:0"><p style="color:white;font-weight:700;font-size:.85rem;margin:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${p.displayName||'Jugador'}${isMe?' (Tú)':''}</p><p style="color:rgba(255,255,255,.6);font-size:.7rem;margin:0">⭐ ${p.stars||0} pts · Nv.${p.level}</p></div>`;t5.appendChild(item);});fu.innerHTML='';const ms=Math.max(...pl.map(p=>p.stars||1));
   // ── Calcular corte de ascenso para la liga actual ──
   const ligaActual = (typeof LIGAS !== 'undefined') ? (LIGAS[(game.ligaLevel||1)-1] || LIGAS[0]) : null;
   const promoCut = ligaActual ? ligaActual.promoCut : 5;
@@ -3091,7 +3221,7 @@ setInterval(()=>{const el=document.getElementById('liga-cnt');if(el&&document.ge
 document.getElementById('btn-ranking').onclick=async()=>{document.getElementById('modal-ranking').classList.add('active');document.getElementById('tab-global').classList.add('active');document.getElementById('tab-liga').classList.remove('active');document.getElementById('panel-global').style.display='';document.getElementById('panel-liga').style.display='none';await loadGlobalRanking();};
 document.getElementById('btn-close-ranking').onclick=()=>document.getElementById('modal-ranking').classList.remove('active');
 
-function openAccountModal(){document.getElementById('acc-name').innerText=game.user?.displayName||game.user?.email?.split('@')[0]||'Invitado';document.getElementById('acc-email').innerText=game.user?.email||(game.user?.isAnonymous?'Sesión anónima':'—');document.getElementById('acc-level').innerText=game.level;document.getElementById('acc-stars').innerText=game.stars;document.getElementById('acc-badges').innerText=game.badges;setAvatarEl(document.getElementById('acc-av'));document.getElementById('modal-account').classList.add('active');}
+function openAccountModal(){document.getElementById('acc-name').innerText=game.user?.displayName||game.user?.email?.split('@')[0]||'Invitado';document.getElementById('acc-email').innerText=game.user?.email||(game.user?.isAnonymous?'Sesión anónima':'—');document.getElementById('acc-level').innerText=game.level;document.getElementById('acc-stars').innerText=game.stars;document.getElementById('acc-badges').innerText=game.badges;document.getElementById('acc-av').innerText=selectedAvatar;document.getElementById('modal-account').classList.add('active');}
 document.getElementById('btn-account').onclick=openAccountModal;
 document.getElementById('btn-close-account').onclick=()=>document.getElementById('modal-account').classList.remove('active');
 document.getElementById('btn-chgav').onclick=()=>{document.getElementById('modal-account').classList.remove('active');openAvatarPicker();};
@@ -3102,7 +3232,7 @@ document.getElementById('btn-new-acc').onclick=()=>{try{signOut(auth).catch(()=>
 window.openLogros = function openLogros(){
   console.log('[Logros] game:', game?.level, 'badges:', game?.badges, 'diplomas:', game?.diplomasEarned);
   // Datos del usuario
-  setAvatarEl(document.getElementById('logros-avatar'));
+  document.getElementById('logros-avatar').textContent = selectedAvatar || '🧑';
   document.getElementById('logros-name').textContent = game.user?.displayName || game.user?.email?.split('@')[0] || 'Usuario';
   document.getElementById('logros-level').textContent = 'Nivel ' + game.level + ' · ' + game.stars + ' ⭐';
 
@@ -3157,46 +3287,8 @@ window.openLogros = function openLogros(){
   document.getElementById('modal-logros').classList.add('active');
 }
 
-window.openAvatarPicker = function openAvatarPicker(){
-  const g = document.getElementById('av-grid');
-  g.innerHTML = '';
-  tempAvatar = selectedAvatar;
-
-  // ── Opción foto de Google (solo si está disponible) ──
-  const gPhoto = getGooglePhotoURL();
-  if(gPhoto){
-    const gRow = document.createElement('div');
-    gRow.className = 'av-google-opt' + (selectedAvatar === gPhoto ? ' selected' : '');
-    gRow.innerHTML = `
-      <img src="${gPhoto}" alt="Foto Google" onerror="this.parentElement.style.display='none'">
-      <div class="av-google-opt-info">
-        <div class="av-google-opt-label">📷 Usar foto de Google</div>
-        <div class="av-google-opt-sub">Tu foto de perfil actual</div>
-      </div>`;
-    gRow.onclick = () => {
-      document.querySelectorAll('.avopt, .av-google-opt').forEach(x => x.classList.remove('selected'));
-      gRow.classList.add('selected');
-      tempAvatar = gPhoto;
-    };
-    g.appendChild(gRow);
-  }
-
-  // ── Emojis disponibles ──
-  AVATARS.forEach(av => {
-    const b = document.createElement('div');
-    b.className = `avopt${av === selectedAvatar ? ' selected' : ''}`;
-    b.textContent = av;
-    b.onclick = () => {
-      document.querySelectorAll('.avopt, .av-google-opt').forEach(x => x.classList.remove('selected'));
-      b.classList.add('selected');
-      tempAvatar = av;
-    };
-    g.appendChild(b);
-  });
-
-  document.getElementById('modal-avatar').classList.add('active');
-}
-document.getElementById('btn-confirm-av').onclick=()=>{selectedAvatar=tempAvatar;setAvatarEl(document.getElementById('hud-avatar'));document.getElementById('modal-avatar').classList.remove('active');saveProgress();updateHUD();};
+window.openAvatarPicker = function openAvatarPicker(){const g=document.getElementById('av-grid');g.innerHTML='';tempAvatar=selectedAvatar;AVATARS.forEach(av=>{const b=document.createElement('div');b.className=`avopt${av===selectedAvatar?' selected':''}`;b.innerText=av;b.onclick=()=>{document.querySelectorAll('.avopt').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');tempAvatar=av;};g.appendChild(b);});document.getElementById('modal-avatar').classList.add('active');}
+document.getElementById('btn-confirm-av').onclick=()=>{selectedAvatar=tempAvatar;document.getElementById('hud-avatar').innerText=selectedAvatar;document.getElementById('modal-avatar').classList.remove('active');saveProgress();updateHUD();};
 
 function updateHUD(){
   const isGuest = game.user?.isAnonymous;
@@ -3207,7 +3299,7 @@ function updateHUD(){
   document.getElementById('stat-lives').innerText = isGala ? '∞' : game.lives;
   document.getElementById('stat-level').innerText = `Nv.${game.level}`;
   document.getElementById('stat-user').innerText = game.user?.displayName||game.user?.email?.split('@')[0]||"Invitado";
-  setAvatarEl(document.getElementById('hud-avatar'));
+  document.getElementById('hud-avatar').innerText = selectedAvatar;
 
   // Escudos: ocultos para invitados
   const shEl = document.getElementById('stat-shields');
@@ -3310,15 +3402,129 @@ function checkMilestones(newLevel){
   }
 }
 
+function getDiplomaTierForLevel(completedLevel){
+  // Tabla de tiers igual que DIPLOMA_TIERS en openLogros
+  const tiers = [
+    {min:50,  label:'🥉 Bronce',   color:'#cd7f32', glow:'rgba(205,127,50,.6)',   layers:['#5a2a08','#7a3a10','#a05020','#cd7f32'], top:'#e8a060', core:'#ffd4a0', title:'Fundamentos PACIE',    bg:'#fffbeb', border:'#cd7f32', textColor:'#7a3a10'},
+    {min:100, label:'🥈 Plata',    color:'#c0c0c0', glow:'rgba(192,192,192,.6)', layers:['#484848','#686868','#909090','#c8c8c8'], top:'#eaeaea', core:'white',   title:'Practicante PACIE',    bg:'#f8fafc', border:'#c0c0c0', textColor:'#374151'},
+    {min:150, label:'🥇 Oro',      color:'#ffd700', glow:'rgba(255,215,0,.65)',   layers:['#6a4e00','#907000','#c09000','#ffd700'], top:'#fff066', core:'white',   title:'Experto PACIE',        bg:'#fffbeb', border:'#ffd700', textColor:'#78350f'},
+    {min:200, label:'✦ Platino',   color:'#d4e8ff', glow:'rgba(180,210,240,.6)', layers:['#3a5060','#5a7080','#8098a8','#b8d0e8'], top:'#eef6ff', core:'white',   title:'Máster PACIE',         bg:'#f0f9ff', border:'#b0c4de', textColor:'#0c4a6e'},
+    {min:250, label:'💎 Diamante', color:'#00cfff', glow:'rgba(0,191,255,.7)',    layers:['#003360','#005590','#007ab5','#00afdf'], top:'#d0f4ff', core:'white',   title:'Élite PACIE',          bg:'#ecfeff', border:'#00bfff', textColor:'#155e75'},
+    {min:300, label:'🔴 Gema Roja',color:'#ff5555', glow:'rgba(255,60,60,.7)',   layers:['#500000','#800000','#b00000','#ff3333'], top:'#ff9090', core:'#ffdddd', title:'Gran Maestro PACIE',   bg:'#fff1f2', border:'#ff4444', textColor:'#881337'},
+    {min:350, label:'💚 Gema Verde',color:'#00ff99',glow:'rgba(0,255,136,.6)',   layers:['#003318','#005528','#008040','#00cc66'], top:'#80ffbb', core:'#ccffe8', title:'Eminencia PACIE',      bg:'#f0fdf4', border:'#00cc66', textColor:'#14532d'},
+    {min:400, label:'💜 Púrpura',  color:'#cc66ff', glow:'rgba(191,95,255,.7)',  layers:['#250048','#420070','#6600aa','#bf5fff'], top:'#e8aaff', core:'#f5d0ff', title:'Sabio PACIE',          bg:'#faf5ff', border:'#bf5fff', textColor:'#581c87'},
+    {min:450, label:'⚙️ Titanio',  color:'#a0b8cc', glow:'rgba(144,168,188,.5)', layers:['#1e2e38','#2e4050','#486070','#7898a8'], top:'#d0dce4', core:'white',   title:'Titán PACIE',          bg:'#f1f5f9', border:'#94a3b8', textColor:'#1e293b'},
+    {min:500, label:'🔷 Zafiro',   color:'#4db8ff', glow:'rgba(30,144,255,.75)', layers:['#001568','#0030a0','#0050c8','#1e80ef'], top:'#b8e0ff', core:'white',   title:'Leyenda Zafiro PACIE', bg:'#eff6ff', border:'#1e90ff', textColor:'#1e3a8a'},
+    {min:550, label:'☢️ Uranio',   color:'#aaffcc', glow:'rgba(0,255,102,.6)',   layers:['#003318','#004d22','#006630','#00aa55'], top:'#ccffdd', core:'white',   title:'Leyenda Absoluta PACIE',bg:'#f0fdf4',border:'#00ff66', textColor:'#14532d'},
+  ];
+  // Buscar el tier exacto para este nivel (el que tiene min === completedLevel)
+  return tiers.find(t => t.min === completedLevel)
+    || tiers.slice().reverse().find(t => completedLevel > t.min)
+    || tiers[0];
+}
+
+function buildDiplomaSealSVG(tier, size=96){
+  const id = 'ds' + Date.now();
+  const [l0,l1,l2,l3] = tier.layers;
+  const hasPulse  = tier.min >= 250;
+  const hasRays   = tier.min >= 500;
+  const hasRings  = tier.min >= 550;
+  const dur = tier.min >= 500 ? 1.5 : tier.min >= 250 ? 1.8 : 2.2;
+  return `<svg width="${size}" height="${size}" viewBox="0 0 100 100"
+      xmlns="http://www.w3.org/2000/svg"
+      style="filter:drop-shadow(0 0 14px ${tier.glow});display:block;margin:0 auto">
+    <defs>
+      <radialGradient id="dsbg_${id}" cx="50%" cy="40%">
+        <stop offset="0%" stop-color="${l3}" stop-opacity=".4"/>
+        <stop offset="100%" stop-color="${l3}" stop-opacity="0"/>
+      </radialGradient>
+      <filter id="dsf_${id}"><feGaussianBlur stdDeviation="2.5" result="b"/>
+        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+      </filter>
+    </defs>
+    ${hasRings ? `<circle cx="50" cy="42" r="22" fill="none" stroke="${tier.core}"
+      stroke-width=".8" opacity="0">
+      <animate attributeName="opacity" values="0;.4;0" dur="${dur}s" repeatCount="indefinite"/>
+      <animate attributeName="r" values="18;28;18" dur="${dur}s" repeatCount="indefinite"/>
+    </circle>` : ''}
+    <circle cx="50" cy="50" r="46" fill="url(#dsbg_${id})">
+      ${hasPulse ? `<animate attributeName="r" values="43;50;43" dur="${dur}s" repeatCount="indefinite"/>` : ''}
+    </circle>
+    <path d="M50 88 L82 70 L50 52 L18 70 Z" fill="${l0}"/>
+    <path d="M50 79 L82 61 L50 43 L18 61 Z" fill="${l1}"/>
+    <path d="M50 70 L82 52 L50 34 L18 52 Z" fill="${l2}"/>
+    <path d="M50 61 L82 43 L50 25 L18 43 Z" fill="${l3}"/>
+    <path d="M50 52 L70 42 L50 32 L30 42 Z" fill="${tier.top}" filter="url(#dsf_${id})">
+      <animate attributeName="opacity" values=".5;1;.5" dur="${dur}s" repeatCount="indefinite"/>
+    </path>
+    <circle cx="50" cy="42" r="5" fill="${tier.core}">
+      <animate attributeName="r" values="4;${hasPulse?7:6};4" dur="${dur}s" repeatCount="indefinite"/>
+    </circle>
+    ${hasRays ? `
+    <line x1="50" y1="14" x2="50" y2="7" stroke="${tier.top}" stroke-width="2">
+      <animate attributeName="opacity" values="0;1;0" dur="${dur}s" begin="0s" repeatCount="indefinite"/>
+    </line>
+    <line x1="64" y1="18" x2="70" y2="12" stroke="${tier.top}" stroke-width="1.8">
+      <animate attributeName="opacity" values="0;1;0" dur="${dur}s" begin="${dur*0.25}s" repeatCount="indefinite"/>
+    </line>
+    <line x1="36" y1="18" x2="30" y2="12" stroke="${tier.top}" stroke-width="1.8">
+      <animate attributeName="opacity" values="0;1;0" dur="${dur}s" begin="${dur*0.5}s" repeatCount="indefinite"/>
+    </line>` : ''}
+  </svg>`;
+}
+
 function generateDiploma(completedLevel){
+  const tier = getDiplomaTierForLevel(completedLevel);
   const name = game.user?.displayName || game.user?.email?.split('@')[0] || 'Estudiante';
   const date = new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'});
-  const sealEmojis = {50:'🥇', 100:'💎', 150:'🚀', 200:'👑', 250:'🌟', 300:'🏛️', 350:'🔮', 400:'🎓'};
-  const seal = sealEmojis[completedLevel] || '🏅';
+
+  // Actualizar contenido textual
   document.getElementById('dip-name').innerText = name;
-  document.getElementById('dip-level').innerText = t('diploma_level').replace('{N}', completedLevel);
-  document.getElementById('dip-date').innerText = `${t('diploma_issued')} ${date} · Fatlin AI v1`;
-  document.querySelector('.diploma-seal').innerText = seal;
+  document.getElementById('dip-level').innerText =
+    `ha completado ${completedLevel} niveles · ${tier.title}`;
+  document.getElementById('dip-date').innerText =
+    `${t('diploma_issued')} ${date} · Fatlin AI v1`;
+
+  // Reemplazar el sello por SVG del tier
+  const sealEl = document.querySelector('.diploma-seal');
+  if(sealEl){
+    sealEl.innerHTML = buildDiplomaSealSVG(tier, 96);
+    sealEl.style.background = 'transparent';
+    sealEl.style.boxShadow  = 'none';
+    sealEl.style.width  = '100px';
+    sealEl.style.height = '100px';
+  }
+
+  // Adaptar colores del diploma al tier
+  const inner = document.querySelector('.diploma-border-inner');
+  if(inner){
+    inner.style.borderColor  = tier.border;
+    inner.style.background   = tier.bg;
+  }
+  const wrap = document.querySelector('#diploma-content');
+  if(wrap) wrap.style.background = tier.bg;
+
+  // Badge de tier debajo del sello
+  let tierBadge = document.getElementById('dip-tier-badge');
+  if(!tierBadge){
+    tierBadge = document.createElement('div');
+    tierBadge.id = 'dip-tier-badge';
+    tierBadge.style.cssText = `font-size:.7rem;font-weight:900;text-transform:uppercase;
+      letter-spacing:.12em;margin:.2rem auto .6rem;display:inline-block;
+      padding:2px 12px;border-radius:20px;`;
+    sealEl?.after(tierBadge);
+  }
+  tierBadge.textContent = tier.label;
+  tierBadge.style.color       = tier.color;
+  tierBadge.style.background  = `rgba(0,0,0,.06)`;
+  tierBadge.style.border      = `1px solid ${tier.border}`;
+
+  // Título del diploma: color del tier
+  const titleEl = document.querySelector('.diploma-title');
+  if(titleEl) titleEl.style.color = tier.textColor;
+  const subEl = document.querySelector('.diploma-subtitle');
+  if(subEl) subEl.style.color = tier.textColor;
+
   document.getElementById('modal-diploma').classList.add('active');
 }
 
