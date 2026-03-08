@@ -2661,30 +2661,33 @@ async function generateQuestionsWithClaude(level) {
     const seed = _promptSeed(level);
 
     // Distribución forzada: 4 mc + 3 tf + 3 fw + 1 match + 1 case = 12 preguntas
-    const fwExamples = `{"type":"fw","q":"La metodología ___ fue creada por FATLA para mejorar la educación virtual","a":"PACIE","j":"PACIE es la metodología desarrollada por FATLA para entornos virtuales.","source":"fatla.org"},{"type":"fw","q":"La fase ___ de PACIE define objetivos y estándares académicos","a":"Alcance","j":"El Alcance establece las metas del proceso educativo en PACIE.","source":"pacie.education"}`;
-    const matchExample = `{"type":"match","q":"Relaciona cada fase de PACIE con su descripción principal","pairs":[{"l":"Presencia","r":"Imagen y motivación del aula"},{"l":"Alcance","r":"Objetivos y estándares"},{"l":"Capacitación","r":"Formación docente tecnológica"},{"l":"Interacción","r":"Aprendizaje colaborativo"}],"a":"match","j":"Las 4 primeras fases de PACIE y sus propósitos principales.","source":"fatla.org"}`;
-    const caseExample = `{"type":"case","q":"¿Qué fase de PACIE está fallando?","scenario":"Una docente diseñó un aula virtual con colores apagados y sin presentación motivadora. Los estudiantes ingresan una vez y no regresan.","a":"Presencia","o":["Presencia","Alcance","Capacitación","Interacción"],"j":"Presencia trata la imagen, motivación visual y el impacto inicial que retiene al estudiante.","source":"fatla.org"}`;
+    // Ejemplos en strings normales (sin backticks) para evitar conflictos de sintaxis
+    const fwExamples = '{"type":"fw","q":"La metodología ___ fue creada por FATLA","a":"PACIE","j":"PACIE es la metodología de FATLA.","source":"fatla.org"}';
+    const matchExample = '{"type":"match","q":"Relaciona fase PACIE con su función","pairs":[{"l":"Presencia","r":"Imagen y motivación"},{"l":"Alcance","r":"Objetivos y estándares"},{"l":"Capacitación","r":"Formación docente"},{"l":"Interacción","r":"Aprendizaje colaborativo"}],"a":"match","j":"Las 4 fases de PACIE.","source":"fatla.org"}';
+    const caseExample = '{"type":"case","q":"¿Qué fase de PACIE falla?","scenario":"Docente diseñó aula sin motivación visual. Estudiantes no regresan.","a":"Presencia","o":["Presencia","Alcance","Capacitación","Interacción"],"j":"Presencia trata la imagen y motivación del aula.","source":"fatla.org"}';
+    const distrib = '4 mc + 3 tf + 3 fw + 1 match + 1 case';
+    const respBase = '{"questions":[{"type":"mc","q":"...","a":"...","o":["...","...","...","..."],"j":"...","source":"fatla.org"},{"type":"tf","q":"...","a":"Verdadero","o":["Verdadero","Falso"],"j":"...","source":"pacie.education"},{"type":"fw","q":"La ___ es la primera fase de PACIE","a":"Presencia","j":"...","source":"fatla.org"},' + matchExample + ',' + caseExample + ']}';
 
     const systemPrompt = expert
       ? `Eres un evaluador experto Master en Metodología PACIE. Fuentes oficiales por área — FATLA: ${PACIE_SOURCE_GROUPS.fatla.urls[0]}, PACIE: ${PACIE_SOURCE_GROUPS.pacie.urls[0]}, ASOMTV: ${PACIE_SOURCE_GROUPS.asomtv.urls[0]}. Usa web_search para consultar CADA área. SEED: ${seed}. RESPONDE SOLO JSON VÁLIDO sin markdown.`
       : `Eres experto en PACIE/FATLA. Debes consultar obligatoriamente estas 3 fuentes usando web_search: ${sourcesStr}. SEED: ${seed}. RESPONDE SOLO JSON VÁLIDO sin markdown ni backticks.`;
 
     const userPrompt = expert
-      ? `Nivel EXPERTO sobre "${topic}". Genera 12 preguntas (4 mc + 3 tf + 3 fw + 1 match + 1 case) para nivel ${level}. SEED:${seed}.
-REGLAS fw: pregunta con ___ donde va UNA palabra clave PACIE. Sin tildes obligatorias.
-REGLAS mc: escenarios reales 2-3 líneas, distractores técnicamente plausibles.
-REGLAS match: pares concepto↔descripción, exactamente 4 pares, "a":"match". Ej: ${matchExample}
-REGLAS case: escenario de aula virtual 2-3 líneas + pregunta + 4 opciones mc. Ej: ${caseExample}
-DISTRIBUCIÓN OBLIGATORIA: exactamente 4 mc, 3 tf, 3 fw, 1 match, 1 case.
-RESPONDE SOLO JSON: {"questions":[{"type":"mc","q":"...","a":"...","o":["...","...","...","..."],"j":"...","source":"fatla.org"},{"type":"tf","q":"...","a":"Verdadero","o":["Verdadero","Falso"],"j":"...","source":"pacie.education"},{"type":"fw","q":"La ___ es la primera fase de PACIE","a":"Presencia","j":"...","source":"fatla.org"},${matchExample},${caseExample}]}`
-      : `Busca "${topic}" consultando OBLIGATORIAMENTE las 3 fuentes (FATLA, PACIE, ASOMTV). Genera 12 preguntas VARIADAS para nivel ${level}. SEED:${seed}.
-DISTRIBUCIÓN OBLIGATORIA: exactamente 4 mc, 3 tf, 3 fw, 1 match, 1 case.
-REGLAS fw: pregunta con ___ donde va UNA palabra clave PACIE. Sin tildes obligatorias. Ej: ${fwExamples}
-REGLAS mc: 4 opciones, respuesta en opciones, distractores plausibles.
-REGLAS tf: a es "Verdadero" o "Falso".
-REGLAS match: relacionar 4 pares concepto↔descripción PACIE. Campo "pairs":[{"l":"...","r":"..."}], "a":"match". Ej: ${matchExample}
-REGLAS case: escenario de situación real en aula virtual + pregunta + 4 opciones. Campos: "scenario","q","a","o". Ej: ${caseExample}
-RESPONDE SOLO: {"questions":[{"type":"mc","q":"...","a":"...","o":["...","...","...","..."],"j":"...","source":"fatla.org"},{"type":"tf","q":"...","a":"Verdadero","o":["Verdadero","Falso"],"j":"...","source":"pacie.education"},{"type":"fw","q":"La ___ define los objetivos en PACIE","a":"Alcance","j":"...","source":"pacie.education"},${matchExample},${caseExample}]}`;
+      ? 'Nivel EXPERTO sobre "' + topic + '". Genera 12 preguntas (' + distrib + ') para nivel ' + level + '. SEED:' + seed + '.\n'
+        + 'REGLAS fw: pregunta con ___ donde va UNA palabra clave PACIE. Sin tildes obligatorias.\n'
+        + 'REGLAS mc: escenarios reales 2-3 lineas, distractores tecnicamente plausibles.\n'
+        + 'REGLAS match: 4 pares concepto-descripcion PACIE, campo pairs:[{l,r}], a="match". Ej: ' + matchExample + '\n'
+        + 'REGLAS case: escenario aula virtual 2-3 lineas + pregunta + 4 opciones. Ej: ' + caseExample + '\n'
+        + 'DISTRIBUCION OBLIGATORIA: exactamente ' + distrib + '.\n'
+        + 'RESPONDE SOLO JSON: ' + respBase
+      : 'Busca "' + topic + '" consultando OBLIGATORIAMENTE las 3 fuentes (FATLA, PACIE, ASOMTV). Genera 12 preguntas VARIADAS para nivel ' + level + '. SEED:' + seed + '.\n'
+        + 'DISTRIBUCION OBLIGATORIA: exactamente ' + distrib + '.\n'
+        + 'REGLAS fw: pregunta con ___ donde va UNA palabra clave PACIE. Sin tildes. Ej: ' + fwExamples + '\n'
+        + 'REGLAS mc: 4 opciones, respuesta en opciones, distractores plausibles.\n'
+        + 'REGLAS tf: a es Verdadero o Falso.\n'
+        + 'REGLAS match: 4 pares concepto-descripcion, campo pairs:[{l,r}], a="match". Ej: ' + matchExample + '\n'
+        + 'REGLAS case: escenario situacion real aula virtual + pregunta + 4 opciones. Ej: ' + caseExample + '\n'
+        + 'RESPONDE SOLO: ' + respBase;
 
     const isProxy = !CLAUDE_ENDPOINT.includes('anthropic.com');
     const bodyPayload = {
@@ -2821,6 +2824,8 @@ const FALLBACK_CASE_QUESTIONS = [
    a:"E-learning",o:["Presencia","Capacitación","Interacción","E-learning"],
    j:"E-learning es la fase final de PACIE donde se logra la madurez pedagógica virtual con uso experto de plataformas LMS.",source:"asomtv.org"},
 ];
+
+const FALLBACK_QUESTIONS = [
     {type:"mc",q:"¿Qué significa la P en la metodología PACIE?",a:"Presencia",o:["Presencia","Proceso","Planificación","Pedagógico"],j:"La P de PACIE corresponde a Presencia, primera fase del modelo.",source:"fatla.org"},
     {type:"mc",q:"¿Cuántas fases tiene la metodología PACIE?",a:"5 fases",o:["3 fases","5 fases","7 fases","4 fases"],j:"PACIE: Presencia, Alcance, Capacitación, Interacción y E-learning.",source:"fatla.org"},
     {type:"mc",q:"¿En qué país fue creada la metodología PACIE?",a:"Ecuador",o:["México","Ecuador","Colombia","Argentina"],j:"PACIE fue desarrollada en Ecuador por Pedro Camacho de FATLA.",source:"pacie.education"},
