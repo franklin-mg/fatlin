@@ -4799,82 +4799,176 @@ document.getElementById('btn-dip-jpg').onclick = async () => {
   const btn = document.getElementById('btn-dip-jpg');
   const origText = btn.innerHTML;
   btn.disabled = true;
-  btn.innerHTML = '⏳ Generando...';
+  btn.innerHTML = '\u23f3 Generando...';
 
-  // Clon temporal fuera del modal para que html2canvas lo capture con dimensiones reales
-  let clone = null;
+  // Polyfill roundRect (no existe en Safari<15.4, Android WebView<99)
+  function rr(ctx, x, y, w, h, r) {
+    r = Math.min(r, w/2, h/2);
+    ctx.beginPath();
+    ctx.moveTo(x+r, y);
+    ctx.lineTo(x+w-r, y);   ctx.arcTo(x+w, y,   x+w, y+r,   r);
+    ctx.lineTo(x+w, y+h-r); ctx.arcTo(x+w, y+h, x+w-r, y+h, r);
+    ctx.lineTo(x+r, y+h);   ctx.arcTo(x,   y+h, x,   y+h-r, r);
+    ctx.lineTo(x,   y+r);   ctx.arcTo(x,   y,   x+r, y,     r);
+    ctx.closePath();
+  }
 
   try {
-    // Asegurar html2canvas cargado
-    if (typeof html2canvas === 'undefined') {
-      await new Promise((res, rej) => {
-        const s = document.createElement('script');
-        s.src = 'https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js';
-        s.onload = res; s.onerror = rej;
-        document.head.appendChild(s);
-      });
-    }
+    // Datos del diploma desde el DOM
+    const name     = (document.getElementById('dip-name')?.textContent||'Estudiante').trim();
+    const certId   = (document.getElementById('dip-cert-id')?.textContent||'FATLIN-ID').trim();
+    const title    = (document.getElementById('dip-cert-title')?.textContent||'Certificado PACIE').trim();
+    const subtitle = (document.getElementById('dip-cert-subtitle')?.textContent||'').trim();
+    const chip     = (document.getElementById('dip-chip')?.textContent||'').trim();
+    const badge    = (document.getElementById('dip-modules-badge')?.textContent||'').trim();
+    const dateStr  = (document.getElementById('dip-date')?.textContent||
+                     new Date().toLocaleDateString('es-ES',{year:'numeric',month:'long',day:'numeric'})).trim();
 
-    const el = document.getElementById('diploma-content');
+    // Color accent por tier — usar rgba() directo, NUNCA hex+alpha (falla en Canvas)
+    const cl = chip.toLowerCase();
+    let aR=205, aG=127, aB=50;
+    if     (cl.includes('uranio'))                          { aR=0;   aG=255; aB=102; }
+    else if(cl.includes('zafiro'))                          { aR=30;  aG=144; aB=255; }
+    else if(cl.includes('titan'))                           { aR=148; aG=163; aB=184; }
+    else if(cl.includes('rpura')||cl.includes('purpura'))   { aR=191; aG=95;  aB=255; }
+    else if(cl.includes('verde'))                           { aR=0;   aG=204; aB=102; }
+    else if(cl.includes('roja'))                            { aR=255; aG=51;  aB=51;  }
+    else if(cl.includes('diamante'))                        { aR=0;   aG=207; aB=255; }
+    else if(cl.includes('platino'))                         { aR=184; aG=208; aB=232; }
+    else if(cl.includes('oro'))                             { aR=255; aG=215; aB=0;   }
+    else if(cl.includes('plata'))                           { aR=192; aG=192; aB=192; }
+    const ac = (a) => 'rgba('+aR+','+aG+','+aB+','+a+')';
 
-    // Calcular dimensiones reales (el puede estar en modal con overflow hidden)
-    // Usamos 1024px de ancho y aspect-ratio 4:3
-    const RENDER_W = 1024;
-    const RENDER_H = Math.round(RENDER_W * 3 / 4); // 768
+    // Canvas 1600x1200
+    const W=1600, H=1200;
+    const cv = document.createElement('canvas');
+    cv.width=W; cv.height=H;
+    const cx = cv.getContext('2d');
 
-    // Crear clon posicionado fuera de la pantalla con dimensiones fijas
-    clone = el.cloneNode(true);
-    clone.style.cssText = `
-      position:fixed; left:-9999px; top:0;
-      width:${RENDER_W}px; height:${RENDER_H}px;
-      max-width:none; aspect-ratio:unset;
-      border-radius:0; z-index:-1; pointer-events:none;
-    `;
-    document.body.appendChild(clone);
+    // Fondo gradiente oscuro
+    const bg = cx.createLinearGradient(0,0,W,H);
+    bg.addColorStop(0,'#1a3a6a'); bg.addColorStop(0.4,'#0a1628'); bg.addColorStop(1,'#0e2848');
+    cx.fillStyle=bg; rr(cx,0,0,W,H,0); cx.fill();
 
-    // Esperar un frame para que el browser calcule layout
-    await new Promise(r => requestAnimationFrame(() => requestAnimationFrame(r)));
+    // Borde exterior
+    cx.strokeStyle='rgba(80,160,255,0.35)'; cx.lineWidth=6;
+    rr(cx,3,3,W-6,H-6,0); cx.stroke();
 
-    const canvas = await html2canvas(clone, {
-      scale: 2,           // 2x para alta resolución → 2048×1536
-      width:  RENDER_W,
-      height: RENDER_H,
-      useCORS: true,
-      allowTaint: true,
-      backgroundColor: '#0a1628',
-      logging: false,
-      imageTimeout: 10000,
+    // Papel interior blanco
+    const px=40, py=40, pw=W-80, ph=H-80;
+    const pg = cx.createLinearGradient(px,py,px+pw,py+ph);
+    pg.addColorStop(0,'#ffffff'); pg.addColorStop(1,'#f0f6ff');
+    cx.fillStyle=pg; rr(cx,px,py,pw,ph,0); cx.fill();
+
+    // Franja lateral de color
+    const sg = cx.createLinearGradient(px,py,px,py+ph);
+    sg.addColorStop(0,ac(1)); sg.addColorStop(0.5,ac(0.67)); sg.addColorStop(1,ac(0.27));
+    cx.fillStyle=sg; rr(cx,px,py,14,ph,0); cx.fill();
+
+    // Contenido
+    const cX=px+36, cW=pw-60;
+
+    cx.fillStyle='#6b7280'; cx.font='bold 22px Arial,sans-serif';
+    cx.fillText('Certificado oficial \xb7 Metodolog\xeda PACIE \xb7 Educaci\xf3n Virtual Gamificada con IA', cX, py+52);
+
+    cx.fillStyle='#0f172a'; cx.font='bold 52px Arial,sans-serif';
+    cx.fillText(title, cX, py+118);
+
+    cx.fillStyle='#4b5563'; cx.font='28px Arial,sans-serif';
+    cx.fillText(subtitle, cX, py+160);
+
+    // Chip (fondo+borde con ac, texto con ac)
+    cx.font='bold 24px Arial,sans-serif';
+    const cpw = cx.measureText(chip).width+48;
+    cx.fillStyle=ac(0.13); rr(cx,cX,py+182,cpw,44,22); cx.fill();
+    cx.strokeStyle=ac(1); cx.lineWidth=2; rr(cx,cX,py+182,cpw,44,22); cx.stroke();
+    cx.fillStyle=ac(1); cx.fillText(chip, cX+20, py+212);
+
+    // Divisor
+    cx.strokeStyle='#e5e7eb'; cx.lineWidth=1.5;
+    cx.beginPath(); cx.moveTo(cX,py+248); cx.lineTo(px+pw-20,py+248); cx.stroke();
+
+    // Se certifica que
+    cx.fillStyle='#374151'; cx.font='26px Arial,sans-serif';
+    cx.fillText('Se certifica que', cX, py+295);
+
+    // Nombre grande
+    cx.fillStyle='#0f172a'; cx.font='bold 68px Arial,sans-serif';
+    let dn=name;
+    while(cx.measureText(dn).width>cW-20 && dn.length>8) dn=dn.slice(0,-4)+'...';
+    cx.fillText(dn, cX, py+375);
+
+    // Logro
+    cx.fillStyle='#374151'; cx.font='24px Arial,sans-serif';
+    cx.fillText('ha completado '+badge, cX, py+425);
+    cx.fillText('con m\xednimo 5 respuestas correctas por nivel \xb7 validado por FATLA, PACIE y ASOMTV', cX, py+462);
+
+    // Divisor
+    cx.strokeStyle='#e5e7eb'; cx.lineWidth=1.5;
+    cx.beginPath(); cx.moveTo(cX,py+498); cx.lineTo(px+pw-20,py+498); cx.stroke();
+
+    // Organizaciones
+    const fy=py+525;
+    ['FATLA','PACIE','ASOMTV','Fatlin AI'].forEach((org,i)=>{
+      const ox=cX+i*(cW/4);
+      cx.fillStyle='#1e3a5f'; cx.font='bold 26px Arial,sans-serif'; cx.fillText(org,ox,fy+58);
+      cx.fillStyle='#9ca3af'; cx.font='18px Arial,sans-serif';
+      cx.fillText(['Fundaci\xf3n Latinoam\xe9rica','Metodolog\xeda Oficial','Red Televisi\xf3n','IA Gamificada'][i],ox,fy+86);
+      cx.strokeStyle='#d1d5db'; cx.lineWidth=1;
+      cx.beginPath(); cx.moveTo(ox,fy+106); cx.lineTo(ox+cW/4-30,fy+106); cx.stroke();
     });
 
-    // Canvas final 1920×1440 (o 2048×1536 directamente del scale:2)
-    // Usar directamente el canvas de html2canvas
-    const certId = document.getElementById('dip-cert-id')?.textContent?.trim() || 'diploma';
-    const fileName = `Diploma-FatlinAI-${certId}.jpg`;
+    // Fecha e ID
+    cx.fillStyle='#6b7280'; cx.font='22px Arial,sans-serif';
+    cx.fillText('Emitido: '+dateStr, cX, fy+148);
+    const idtxt='ID: '+certId;
+    cx.fillStyle='#374151'; cx.font='bold 20px monospace';
+    cx.fillText(idtxt, px+pw-cx.measureText(idtxt).width-24, py+ph-32);
+    cx.fillStyle='#9ca3af'; cx.font='18px monospace';
+    cx.fillText('Verificar: fatlin.web.app/verify \xb7 '+certId, cX, py+ph-32);
 
-    // dataURL directo — más confiable que toBlob en móviles
-    const dataURL = canvas.toDataURL('image/jpeg', 0.95);
-    if(!dataURL || dataURL === 'data:,'){
-      showToast('Error: canvas vacío', '#dc2626'); return;
+    // Sello decorativo
+    const sX=px+pw-140, sY=py+72;
+    cx.beginPath(); cx.arc(sX,sY,72,0,Math.PI*2);
+    cx.fillStyle=ac(0.13); cx.fill();
+    cx.strokeStyle=ac(1); cx.lineWidth=3; cx.stroke();
+    cx.fillStyle=ac(1); cx.font='bold 44px Arial'; cx.textAlign='center';
+    cx.fillText('\u2736', sX, sY+16);
+    cx.textAlign='left';
+
+    // Exportar como blob y descargar
+    btn.innerHTML='\u23f3 Descargando...';
+    const fileName='Diploma-FatlinAI-'+certId+'.jpg';
+
+    const blob = await new Promise((res,rej)=>{
+      cv.toBlob(b=>{
+        if(b && b.size>1000) res(b);
+        else rej(new Error('Blob vac\xedo, size='+(b?b.size:0)));
+      }, 'image/jpeg', 0.93);
+    });
+
+    const url = URL.createObjectURL(blob);
+    const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+    if(isIOS){
+      window.open(url,'_blank');
+      showToast('\ud83d\udcf1 Mant\xe9n pulsada la imagen \u2192 Guardar en Fotos','#0284c7',8000);
+      setTimeout(()=>URL.revokeObjectURL(url),300000);
+    } else {
+      const a=document.createElement('a');
+      a.href=url; a.download=fileName; a.style.display='none';
+      document.body.appendChild(a);
+      a.click();
+      setTimeout(()=>{ document.body.removeChild(a); URL.revokeObjectURL(url); },10000);
+      showToast('\u2705 '+fileName+' guardado en Descargas','#16a34a',5000);
     }
 
-    // Descargar
-    const a = document.createElement('a');
-    a.href = dataURL;
-    a.download = fileName;
-    a.style.display = 'none';
-    document.body.appendChild(a);
-    a.click();
-    setTimeout(() => { document.body.removeChild(a); }, 500);
-
-    showToast('✅ Imagen JPG descargada · ' + fileName, '#16a34a');
-
-  } catch(err) {
-    console.error('JPG error:', err);
-    showToast('Error al generar JPG: ' + err.message, '#dc2626');
+  } catch(err){
+    console.error('[JPG]',err);
+    showToast('Error JPG: '+(err.message||String(err)),'#dc2626',7000);
   } finally {
-    if(clone && clone.parentNode) clone.parentNode.removeChild(clone);
-    btn.disabled = false;
-    btn.innerHTML = origText;
+    btn.disabled=false;
+    btn.innerHTML=origText;
   }
 };
 
